@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Recognition Attendance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/attendance.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="left">
+        <h1>Face Recognition<br>Attendance System</h1>
+        <p>
+            Automated attendance using real-time face recognition.
+            Secure, fast, and eliminates proxy attendance.
+        </p>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right">
+        <h2>Mark Attendance</h2>
+        <p>Click the button to start face recognition</p>
+
+        <button id="startBtn" class="btn">
+            ▶ Start Attendance
+        </button>
+
+        <div id="status" class="status">
+            Waiting for action...
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+</body>
+</html>

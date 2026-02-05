@@ -1,0 +1,112 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* MAIN CONTAINER */
+.container {
+    width: 100%;
+    max-width: 900px;
+    min-height: 400px;                 /* 🔥 height control */
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+/* LEFT PANEL */
+.left {
+    width: 50%;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: white;
+    padding: 50px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;           /* 🔥 vertical center */
+}
+
+.left h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.left p {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+/* RIGHT PANEL */
+.right {
+    width: 50%;
+    padding: 50px;
+    text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;           /* 🔥 vertical center */
+    align-items: center;               /* 🔥 horizontal center */
+}
+
+.right h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.right p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* BUTTON */
+.btn {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.btn:disabled {
+    background: gray;
+    cursor: not-allowed;
+}
+
+/* STATUS TEXT */
+.status {
+    margin-top: 25px;
+    font-size: 14px;
+    color: #444;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left, .right {
+        width: 100%;
+    }
+}

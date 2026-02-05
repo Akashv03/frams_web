@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/student.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>Registration Form</h2>
+
+    <form onsubmit="return saveStudent()">
+
+        <div class="row">
+            <input type="text" id="fname" placeholder="First Name" required>
+            <input type="text" id="lname" placeholder="Last Name" required>
+        </div>
+
+        <div class="row">
+            <input type="date" id="dob" required>
+            <input type="tel" id="phone" placeholder="Phone Number" required>
+        </div>
+
+        <div class="row">
+            <input type="text" id="department" placeholder="Department" required>
+            <input type="text" id="course" placeholder="Course" required>
+        </div>
+
+        <div class="row">
+            <input type="text" id="year" placeholder="Year of Studying" required>
+
+            <select id="shift" required>
+                <option value="">Select Shift</option>
+                <option>Day</option>
+                <option>Evening</option>
+            </select>
+        </div>
+
+        <!-- CAMERA SECTION -->
+        <div class="camera-box">
+            <video id="video" autoplay></video>
+            <canvas id="canvas"></canvas>
+
+            <button type="button" onclick="openCamera()">Open Camera</button>
+            <button type="button" onclick="capturePhoto()">Capture Photo</button>
+        </div>
+
+        <button type="submit" class="submit-btn">Save Student</button>
+
+    </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/student.js') }}"></script>
+</body>
+</html>
