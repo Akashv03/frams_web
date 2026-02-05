@@ -9,6 +9,7 @@ startBtn.addEventListener("click", () => {
         .then(response => {
             statusText.innerText = "Attendance process completed ✅";
             startBtn.disabled = false;
+            
         })
         .catch(error => {
             statusText.innerText = "Error starting attendance ❌";

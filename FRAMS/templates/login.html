@@ -2,62 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus | Face Recognition Portal</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<div class="overlay">
-    <div class="main-container">
-
-        <!-- LEFT -->
-        <div class="left-section">
-            <h1>Face Recognition</h1>
-            <h1>Attendance</h1>
-            <h1>Management</h1>
-            <h1>System</h1>
-            <p>Fast • Secure • Contactless Attendance</p>
-        </div>
-
-        <!-- RIGHT -->
-        <div class="right-section">
-            <div class="login-card">
-                <h2>LOGIN</h2>
-
-                <form onsubmit="return login()">
-                    <div class="input-box">
-                        <input type="text" id="username" required>
-                        <label>Username</label>
-                    </div>
-
-                    <div class="input-box">
-                        <input type="password" id="password" required>
-                        <label>Password</label>
-                    </div>
-
-                    <button type="submit">Login</button>
-
-                    <!-- FORGOT PASSWORD -->
-                    <div class="extra-links">
-                        <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
-                    </div>
-
-                    <!-- CREATE ACCOUNT -->
-                    <div class="extra-links">
-                        <p>
-                            Don’t have an account?
-                            <a href="{{ url_for('student_reg') }}">Create Account</a>
-                        </p>
-                    </div>
-
-                    <p id="error"></p>
-                </form>
+<div class="viewport-wrapper">
+    <div class="glass-container">
+        
+        <div class="panel-info">
+            <div class="badge">Face Recognition</div>
+            <div class="info-content">
+                <h1> Attendance <span>Management System.</span></h1>
+                <p>Utilizing advanced biometric neural networks to provide seamless attendance tracking for modern institutions.</p>
+            </div>
+            <div class="footer-note">
+                © 2026 Nexus Attendance Systems • Privacy Protected
             </div>
         </div>
 
+        <div class="panel-action">
+            
+            <div id="loginForm" class="auth-box active">
+                <div class="header">
+                    <h2>Sign In</h2>
+                    <!-- <p>Enter your administrative credentials</p> -->
+                </div>
+
+                <form onsubmit="return login()">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" placeholder="e.g. 24MCA058" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Authenticate</button>
+                </form>
+
+                <div class="divider"><span>OR</span></div>
+                <button class="btn-secondary" onclick="showRegister()">Register New Student</button>
+            </div>
+
+           <div id="registerForm" class="auth-box">
+    <div class="header">
+        <button class="back-link" onclick="showLogin()">← Back</button>
+        <h2>Student Enrollment</h2>
     </div>
+
+    <form onsubmit="return saveStudent()" class="compact-form">
+        <div class="form-main-grid">
+            
+            <div class="fields-column">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" placeholder="e.g. Nithish" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Date of Birth</label>
+                    <input type="date" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Department</label>
+                    <select class="black-select" required>
+                        <option value="" disabled selected>Select Dept</option>
+                        <option>Computer Science</option>
+                        <option>Engineering</option>
+                        <option>Business</option>
+                    </select>
+                </div>
+
+                <div class="dual-row">
+                    <div class="input-group">
+                        <label>Course</label>
+                        <input type="text" placeholder="MCA" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Year</label>
+                        <select class="black-select" required>
+                            <option value="" disabled selected>Year</option>
+                            <option>1st</option>
+                            <option>2nd</option>
+                            <option>3rd</option>
+                            <option>4th</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="camera-column">
+                <label>Face Biometrics</label>
+                <div class="camera-wrapper mini">
+                    <video id="webcam" autoplay playsinline></video>
+                    <div id="camPlaceholder" class="cam-placeholder">
+                        <span class="icon">📷</span>
+                        <span>Offline</span>
+                    </div>
+                    <div class="scan-overlay"></div>
+                </div>
+                
+                <div class="camera-actions vertical">
+                    <button type="button" class="btn-cam" onclick="startCamera()">Open</button>
+                    <button type="button" class="btn-cam" onclick="stopCamera()">Close</button>
+                    <button type="button" class="btn-cam capture" onclick="takeSnapshot()">Capture</button>
+                    
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary mt-10">Create Student Profile</button>
+    </form>
+
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>  
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 </body>
 </html>

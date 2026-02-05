@@ -1,208 +1,395 @@
+:root {
+    --primary: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.5);
+    --primary-hover: #2563eb;
+    --bg-dark: #070b14;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0, transparent 40%),
+        radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.08) 0, transparent 40%);
     height: 100vh;
-    background: url("../images/bgimg.jpg") no-repeat center center;
-    background-size: cover;
-}
-
-/* DARK OVERLAY (important for text readability) */
-.overlay {
-    background:
-        radial-gradient(circle at right, rgba(56,189,248,0.15), transparent 60%),
-        linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.65));
-    height: 100vh;
-}
-
-/* MAIN LAYOUT */
-.main-container {
     display: flex;
-    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    overflow: hidden;
 }
 
-/* LEFT SECTION */
-.left-section {
+.viewport-wrapper {
+    width: 100%;
+    max-width: 1100px;
+    padding: 20px;
+}
+
+.glass-container {
+    display: flex;
+    background: var(--glass);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    overflow: hidden;
+    min-height: 680px;
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* LEFT PANEL - BRANDING */
+.panel-info {
     flex: 1;
-    color: white;
-    padding: 100px;
+    padding: 60px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    animation: slideLeft 1.2s ease;
+    justify-content: space-between;
+    border-right: 1px solid var(--border);
 }
 
-.left-section h1 {
+/* FIX: Badge size reduced and styled for professional look */
+.badge {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--primary);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: fit-content;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.info-content h1 {
     font-size: 52px;
     font-weight: 800;
-    letter-spacing: 1px;
-    line-height: 1.2;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 24px;
 }
 
-.left-section span {
-    color: #7dd3fc;
+.info-content span {
+    background: linear-gradient(to right, #60a5fa, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.left-section p {
-    margin-top: 30px;
+.info-content p {
+    color: var(--text-muted);
+    line-height: 1.7;
     font-size: 18px;
-    opacity: 0.9;
-    max-width: 450px;
+    max-width: 400px;
 }
 
-/* RIGHT SECTION */
-.right-section {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 1.5s ease;
+.footer-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    opacity: 0.6;
 }
 
-/* LOGIN CARD */
-.login-card {
-    width: 400px;
-    padding: 40px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(18px);
-    border-radius: 22px;
-    color: white;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.45);
-    border: 1px solid rgba(255,255,255,0.2);
-    transition: 0.4s;
-}
-
-.login-card:hover {
-    transform: translateY(-6px);
-}
-
-/* TITLE */
-.login-card h2 {
-    font-size: 28px;
-    margin-bottom: 30px;
-    text-align: center;
-    letter-spacing: 1px;
-}
-
-/* INPUT BOX */
-.input-box {
+/* RIGHT PANEL - ACTIONS */
+.panel-action {
+    flex: 1.2;
+    padding: 50px 70px;
     position: relative;
-    margin-bottom: 35px;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
 }
 
-.input-box input {
+.auth-box {
+    width: 100%;
+    display: none;
+    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-box.active { display: block; }
+
+.header { margin-bottom: 40px; }
+.header h2 { font-size: 32px; font-weight: 700; margin-bottom: 10px; }
+.header p { color: var(--text-muted); font-size: 15px; }
+
+/* INPUT STYLING */
+.input-group { margin-bottom: 22px; }
+.input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    padding-left: 4px;
+}
+
+.input-group input, 
+.input-group select {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: white;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+/* FIX: Ensure dropdowns are usable */
+.black-select {
+    color: #000 !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    font-weight: 500;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.05);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* CAMERA UI */
+.camera-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: #000;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+#webcam { width: 100%; height: 100%; object-fit: cover; }
+
+.cam-placeholder {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    gap: 10px;
+}
+
+.camera-actions { display: flex; gap: 10px; margin-bottom: 25px; }
+
+.btn-cam {
+    flex: 1;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-cam:hover { background: rgba(255, 255, 255, 0.1); }
+.btn-cam.capture { 
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--primary); 
+    color: var(--primary); 
+}
+
+.scan-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 3px;
+    background: var(--primary);
+    box-shadow: 0 0 20px var(--primary);
+    animation: scanLine 2.5s infinite ease-in-out;
+    display: none;
+    z-index: 5;
+}
+
+/* BUTTONS */
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.5);
+}
+
+.btn-secondary {
     width: 100%;
     padding: 14px;
     background: transparent;
-    border: none;
-    border-bottom: 2px solid rgba(255,255,255,0.6);
-    color: white;
-    font-size: 16px;
-    outline: none;
-    transition: 0.3s;
-}
-
-.input-box input:focus {
-    border-bottom-color: #7dd3fc;
-}
-
-.input-box label {
-    position: absolute;
-    left: 0;
-    top: 14px;
-    transition: 0.3s;
-    font-size: 14px;
-    opacity: 0.8;
-}
-
-.input-box input:focus ~ label,
-.input-box input:valid ~ label {
-    top: -14px;
-    font-size: 12px;
-    color: #7dd3fc;
-}
-
-/* BUTTON */
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 30px;
-    font-size: 16px;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    border-radius: 14px;
     cursor: pointer;
-    font-weight: bold;
-    color: #0f172a;
-    background: linear-gradient(135deg, #7dd3fc, #38bdf8);
-    transition: 0.4s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-.extra-links {
-    margin-top: 10px;
-    text-align: center;
-}
-
-.extra-links a {
-    color: #00c6ff;
-    text-decoration: none;
     font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
 }
 
-.extra-links a:hover {
-    text-decoration: underline;
-}
+.btn-secondary:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
 
-/* ERROR / STATUS */
-#error {
-    margin-top: 15px;
-    color: #ffb3b3;
+.divider {
     text-align: center;
+    margin: 30px 0;
+    position: relative;
+}
+
+.divider::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 0; width: 100%; height: 1px;
+    background: var(--border);
+}
+
+.divider span {
+    position: relative;
+    background: #0d131f; /* Adjusted to match panel background */
+    padding: 0 15px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.back-link {
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 700;
+    margin-bottom: 25px;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* ANIMATIONS */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes scanLine {
+    0% { top: 0; opacity: 0; }
+    50% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
 }
 
-@keyframes slideLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-60px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* RESPONSIVE */
 @media (max-width: 900px) {
-    .main-container {
-        flex-direction: column;
-    }
+    .glass-container { flex-direction: column; overflow-y: auto; }
+    .panel-info { padding: 40px; border-right: none; border-bottom: 1px solid var(--border); }
+    .panel-action { padding: 40px; }
+    .info-content h1 { font-size: 36px; }
+}
 
-    .left-section {
-        padding: 60px;
-        text-align: center;
-    }
+/* COMPACT FORM REDESIGN */
+.compact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-    .right-section {
-        padding: 30px;
+.form-main-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr; /* Asymmetric grid for balance */
+    gap: 24px;
+    align-items: start;
+}
+
+/* Row specifically for Course and Year to sit side-by-side */
+.dual-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+/* Shrink the camera for professional density */
+.camera-wrapper.mini {
+    height: 140px; /* Reduced from 200px */
+    margin-bottom: 8px;
+    border: 1px dashed var(--border);
+    background: rgba(0,0,0,0.4);
+}
+
+.camera-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.camera-column label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+}
+
+/* Stack camera buttons horizontally or vertically depending on space */
+.camera-actions.vertical {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+/* Make Capture button span both columns for emphasis */
+.camera-actions.vertical .capture {
+    grid-column: span 2;
+}
+
+/* Global input tweak for compactness */
+.compact-form .input-group {
+    margin-bottom: 12px;
+}
+
+.compact-form .input-group input, 
+.compact-form .input-group select {
+    padding: 10px 14px; /* Slightly tighter padding */
+    font-size: 14px;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+/* Icon style for placeholder */
+.cam-placeholder .icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+    opacity: 0.5;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 600px) {
+    .form-main-grid {
+        grid-template-columns: 1fr;
+    }
+    .camera-wrapper.mini {
+        height: 180px;
     }
 }
