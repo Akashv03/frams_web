@@ -3,14 +3,6 @@ from database import get_db_connection
 
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    db = get_db_connection()
-
-    if db:
-        return "FRAMS Database Connected Successfully!"
-    else:
-        return "Database Connection Failed!"
 
 @app.route("/")
 def login_page():
@@ -28,6 +20,20 @@ def student_reg():
 @app.route("/forgot-password")
 def forgot_password():
     return render_template("forgot_password.html")
+
+@app.route("/start-attendance")
+def start_attendance():
+    return "Attendance started!"
+
+
+# @app.route("/")
+# def home():
+#     db = get_db_connection()
+
+#     if db:
+#         return "FRAMS Database Connected Successfully!"
+#     else:
+#         return "Database Connection Failed!"
 
 if __name__ == "__main__":
     app.run(debug=True)

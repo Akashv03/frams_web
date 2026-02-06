@@ -46,6 +46,32 @@
 //     return false;
 // }
 
+// function goattendance(){
+//     window.location.href = "/attendance";
+//     return false;
+// }
+
+function login() {
+
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
+
+    if (user === "admin" && pass === "123") {
+
+        window.location.href = "/attendance";
+        return false;
+
+    } else {
+
+        alert("Wrong username or password!");
+        return false;
+
+    }
+}
+
+
+
+
 
 let videoStream = null;
 
@@ -92,8 +118,12 @@ function showRegister() {
     setTimeout(() => document.getElementById("registerForm").classList.add("active"), 300);
 }
 
+
+
 function showLogin() {
     stopCamera(); // Clean up camera if they go back
     document.getElementById("registerForm").classList.remove("active");
     setTimeout(() => document.getElementById("loginForm").classList.add("active"), 300);
 }
+
+
