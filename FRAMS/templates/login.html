@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus | Face Recognition Portal</title>
+    <title> Face Recognition Portal</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
@@ -53,7 +53,7 @@
                 <button class="btn-secondary" onclick="showRegister()">Register New Student</button>
             </div>
 
-           <div id="registerForm" class="auth-box">
+        <div id="registerForm" class="auth-box">
     <div class="header">
         <button class="back-link" onclick="showLogin()">← Back</button>
         <h2>Student Enrollment</h2>
@@ -63,6 +63,14 @@
         <div class="form-main-grid">
             
             <div class="fields-column">
+                <div class="input-group">
+                    <label>Register Number</label>
+                    <input type="text" id="regno" placeholder="e.g. 24MCA058" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="......." required>
+                </div>
                 <div class="input-group">
                     <label>Full Name</label>
                     <input type="text" placeholder="e.g. Nithish" required>
@@ -86,7 +94,7 @@
                 <div class="dual-row">
                     <div class="input-group">
                         <label>Course</label>
-                        <input type="text" placeholder="MCA" required>
+                        <input type="text" placeholder="e.g. MCA" required>
                     </div>
                     <div class="input-group">
                         <label>Year</label>
@@ -115,7 +123,7 @@
                 <div class="camera-actions vertical">
                     <button type="button" class="btn-cam" onclick="startCamera()">Open</button>
                     <button type="button" class="btn-cam" onclick="stopCamera()">Close</button>
-                    <button type="button" class="btn-cam capture" onclick="takeSnapshot()">Capture</button>
+                    <button type="button" class="btn-cam capture" onclick="autoCapture()">Capture</button>
                     
                 </div>
             </div>

@@ -2,42 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Face Recognition Attendance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- CSS -->
+    <title>VisionTrack AI | Enterprise Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/attendance.css') }}">
 </head>
 <body>
 
-<div class="container">
-
-    <!-- LEFT PANEL -->
-    <div class="left">
-        <h1>Face Recognition<br>Attendance System</h1>
-        <p>
-            Automated attendance using real-time face recognition.
-            Secure, fast, and eliminates proxy attendance.
-        </p>
-    </div>
-
-    <!-- RIGHT PANEL -->
-    <div class="right">
-        <h2>Mark Attendance</h2>
-        <p>Click the button to start face recognition</p>
-
-        <button id="startBtn" class="btn">
-            ▶ Start Attendance
-        </button>
-
-        <div id="status" class="status">
-            Waiting for action...
+<div class="app-shell">
+    <nav class="status-bar">
+        <div class="brand">
+            <div class="pulse-icon"></div>
+            <span>VISION<strong>TRACK</strong></span>
         </div>
-    </div>
+        <div id="clock" class="clock">12:00:00 PM</div>
+    </nav>
 
+    <div class="main-layout">
+        
+        <section class="camera-panel">
+            <div class="container-header">
+                <span>Biometric Sensor: Active</span>
+            </div>
+            
+            <div class="video-wrapper">
+                <div class="hud-overlay">
+                    <div class="corner tl"></div><div class="corner tr"></div>
+                    <div class="corner bl"></div><div class="corner br"></div>
+                    <div class="scan-anim"></div>
+                </div>
+                <video id="video" autoplay playsinline></video>
+            </div>
+
+            <div class="action-bar">
+                <button onclick="startCamera()" class="btn btn-glow">Analyzie</button>
+                <button onclick="captureFace()" class="btn btn-outline">Detect Face</button>
+                <button onclick="stopCamera()" class="btn btn-danger">Stop Analyzing</button>
+            </div>
+        </section>
+
+        <section class="data-panel">
+            <div class="container-header">
+                <span>Verification Results</span>
+            </div>
+            
+            <div class="id-card">
+                <div class="avatar-section">
+                    <img id="preview" src="" alt="Live Capture">
+                    <div class="id-status">Verified Identity</div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Registration Number</label>
+                        <input id="reg" type="text" readonly placeholder="---">
+                    </div>
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input id="name" type="text" readonly placeholder="Awaiting Input...">
+                    </div>
+                    <div class="input-group full">
+                        <label>Department</label>
+                        <input id="dept" type="text" readonly placeholder="---">
+                    </div>
+                    <div class="row">
+                        <div class="input-group">
+                            <label>Course</label>
+                            <input id="course" type="text" readonly placeholder="---">
+                        </div>
+                        <div class="input-group">
+                            <label>Year</label>
+                            <input id="year" type="text" readonly placeholder="---">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="input-group">
+                            <label>Date</label>
+                            <input id="date" type="text" readonly placeholder="00/00/00">
+                        </div>
+                        <div class="input-group">
+                            <label>Time</label>
+                            <input id="time" type="text" readonly placeholder="00:00:00">
+                        </div>
+                    </div>
+
+                    <button class="refresh" onclick="refreshPage()" class="btn btn-outline">Refresh</button>
+                </div>
+            </div>
+        </section>
+        
+    </div>
 </div>
 
-<!-- JavaScript -->
 <script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
 </body>
 </html>
