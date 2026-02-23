@@ -1,181 +1,146 @@
-// // LOGIN **
-// function login() {
-
-//     let user = document.getElementById("username").value;
-//     let pass = document.getElementById("password").value;
-
-//     if (user === "admin" && pass === "123") {
-
-//         window.location.href = "/attendance";
-//         return false;
-
-//     } else {
-
-//         alert("Wrong username or password!");
-//         return false;
-
-//     }
-// }
-
-// //UNIQUE REGNO **
-// let regno = document.getElementById("regno").value;
-// console.log(regno);
-
-
-
-
-// //CAMERA OPEN / CLOSE / CAPTURE**
-// let videoStream = null;
-
-// async function startCamera() {
-//     const video = document.getElementById('webcam');
-//     const placeholder = document.getElementById('camPlaceholder');
-//     const scanLine = document.querySelector('.scan-overlay');
-
-//     try {
-//         videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-//         video.srcObject = videoStream;
-//         video.style.display = 'block';
-//         placeholder.style.display = 'none';
-//         scanLine.style.display = 'block';
-//     } catch (err) {
-//         console.error("Camera Error:", err);
-//         alert("Please allow camera access to enroll.");
-//     }
-// }
-
-// function stopCamera() {
-//     if (videoStream) {
-//         videoStream.getTracks().forEach(track => track.stop());
-//         document.getElementById('webcam').style.display = 'none';
-//         document.getElementById('camPlaceholder').style.display = 'flex';
-//         document.querySelector('.scan-overlay').style.display = 'none';
-//         videoStream = null;
-//     }
-// }
-
-// // function takeSnapshot() {
-// //     if (!videoStream) return alert("Open camera first");
-    
-// //     // Add a quick flash effect for "Attractive" UI feedback
-// //     const wrapper = document.querySelector('.camera-wrapper');
-// //     wrapper.style.filter = 'brightness(2)';
-// //     setTimeout(() => wrapper.style.filter = 'brightness(1)', 100);
-    
-// //     alert("Biometric pattern captured successfully!");
-// // }
-
-// // function takeSnapshot() {
-
-// //     if (!videoStream) return alert("Open camera first");
-
-// //     const regno = document.getElementById("regno").value;
-
-// //     if (!regno) {
-// //         alert("Enter Register Number first!");
-// //         return;
-// //     }
-
-// //     const video = document.getElementById("webcam");
-
-// //     const canvas = document.createElement("canvas");
-// //     canvas.width = video.videoWidth;
-// //     canvas.height = video.videoHeight;
-
-// //     const ctx = canvas.getContext("2d");
-// //     ctx.drawImage(video, 0, 0);
-
-// //     const image = canvas.toDataURL("image/jpeg");
-
-// //     // UI flash effect (keep your style)
-// //     const wrapper = document.querySelector('.camera-wrapper');
-// //     wrapper.style.filter = 'brightness(2)';
-// //     setTimeout(() => wrapper.style.filter = 'brightness(1)', 100);
-
-// //     fetch("/capture_face", {
-// //         method: "POST",
-// //         headers: { "Content-Type": "application/json" },
-// //         body: JSON.stringify({
-// //             regno: regno,
-// //             image: image
-// //         })
-// //     })
-// //     .then(res => res.json())
-// //     .then(data => alert(data.message))
-// //     .catch(() => alert("Server error"));
-// // }
-
-// fetch("/capture_face", {
-//     method: "POST",
-//     headers: {"Content-Type": "application/json"},
-//     body: JSON.stringify({...})
-// })
-
-
-
-
-// //THORUGH BACK **
-// function showRegister() {
-//     document.getElementById("loginForm").classList.remove("active");
-//     setTimeout(() => document.getElementById("registerForm").classList.add("active"), 300);
-// }
-
-
-
-// function showLogin() {
-//     stopCamera(); // Clean up camera if they go back
-//     document.getElementById("registerForm").classList.remove("active");
-//     setTimeout(() => document.getElementById("loginForm").classList.add("active"), 300);
-// }
-
-
-
 // LOGIN
-function login() {
+async function login(event) {
+    event.preventDefault(); // stop page reload
 
     let user = document.getElementById("username").value;
     let pass = document.getElementById("password").value;
 
-    if (user === "admin" && pass === "123") {
+    try {
+        let res = await fetch("/student-login", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({regno: user, password: pass})
+        });
 
-        window.location.href = "/attendance";
+        let result = await res.json();
+        console.log(result);
 
-    } else {
+        if (result.status === "success") {
+            if (result.role === "admin") {
+                window.location.href = "/attendance"; // Admin page
+            } else if (result.role === "student") {
+                // Pass student regno as query param (optional)
+                window.location.href = `/student-dashboard?regno=${result.regno}`;
+            }
+        } else {
+            alert("❌ " + result.message);
+        }
 
-        alert("Wrong username or password!");
+    } catch (err) {
+        console.error(err);
+        alert("❌ Network error");
     }
 
     return false;
 }
 
 
-// CAMERA
-let videoStream = null;
 
+let captureInterval;
+let isCapturing = false;
+
+// Open Camera
 async function startCamera() {
-
     const video = document.getElementById("webcam");
+    const placeholder = document.getElementById("camPlaceholder");
+    const statusText = document.getElementById("captureStatus");
+    if (!statusText) {
+    console.error("captureStatus element not found!");
+    return;
+}
 
     try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
 
-        videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = videoStream;
+        placeholder.style.display = "none";
+        statusText.innerHTML = "📷 Camera Started... Preparing capture...";
 
-    } catch (err) {
+        // Start auto capture after 2 seconds
+        setTimeout(() => {
+            autoCapture();
+        }, 2000);
 
-        alert("Camera access denied");
-
+    } catch (error) {
+        statusText.innerHTML = "❌ Unable to access camera";
     }
 }
 
+// Stop Camera
 function stopCamera() {
+    const video = document.getElementById("webcam");
+    const statusText = document.getElementById("captureStatus");
 
-    if (videoStream) {
-
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
     }
+
+    clearInterval(captureInterval);
+    isCapturing = false;
+    statusText.innerHTML = "📴 Camera Stopped";
+}
+
+// Auto Capture Function
+async function autoCapture() {
+
+    if (isCapturing) return;
+
+    const regno = document.getElementById("regno").value.trim();
+    const video = document.getElementById("webcam");
+    const statusText = document.getElementById("captureStatus");
+
+    if (!regno) {
+        statusText.innerHTML = "⚠ Enter Register Number!";
+        return;
+    }
+
+    if (!video.videoWidth) {
+        statusText.innerHTML = "⚠ Camera not ready!";
+        return;
+    }
+
+    isCapturing = true;
+    statusText.innerHTML = "📸 Capturing faces...";
+
+    captureInterval = setInterval(async () => {
+
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        const image = canvas.toDataURL("image/jpeg");
+
+        try {
+            const res = await fetch("/autoCapture", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    regno: regno,
+                    image: image
+                })
+            });
+
+            const data = await res.json();
+
+            statusText.innerHTML = data.message;
+
+            if (data.message.includes("Already collected 40")) {
+                clearInterval(captureInterval);
+                isCapturing = false;
+                statusText.innerHTML = "40 Images Collected Successfully!";
+                stopCamera();
+            }
+
+        } catch (error) {
+            statusText.innerHTML = "❌ Error capturing image";
+            clearInterval(captureInterval);
+            isCapturing = false;
+        }
+
+    }, 300);
 }
 
 
@@ -196,55 +161,55 @@ function showLogin() {
 }
 
 
+//save student details in db 
+                                                                  
+async function saveStudent(event) {
+    event.preventDefault();  // STOP form from reloading page
 
- async function autoCapture() {
+    let student = {
+        regno: document.getElementById("regno").value,
+        password: document.getElementById("regPassword").value,
+        fullname: document.getElementById("fullname").value,
+        dob: document.getElementById("dob").value,
+        department: document.getElementById("department").value,
+        course: document.getElementById("course").value,
+        year: document.getElementById("year").value
+    };
 
-    const regno = document.getElementById("regno").value.trim();
-    const video = document.getElementById("webcam");
+    let res = await fetch("/studentregister", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(student)
+    });
 
-    if (!regno) {
-        alert("Enter register number!");
-        return;
+    let result = await res.json();
+    console.log(result); // 🔥 Debug: see server response
+
+    if (result.status === "success") {
+        alert("✅ Student saved to database!");
+        showLogin();
+    } else {
+        alert("❌ Error: " + result.message);
     }
 
-    if (!video.videoWidth) {
-        alert("Camera not ready!");
-        return;
-    }
-
-    alert("Auto capture starting...");
-
-    for (let i = 1; i <= 30; i++) {
-
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0);
-
-        const image = canvas.toDataURL("image/jpeg");
-
-        const res = await fetch("/autoCapture", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                regno: regno,
-                image: image
-            })
-        });
-
-        const data = await res.json();
-        console.log(data.message);
-
-        await new Promise(r => setTimeout(r, 200));
-    }
-
-    alert("✅ 30 images captured!");
+    return false;
 }
 
+//face recognize
 
+async function recognizeFace(imageData) {
 
+    let response = await fetch("/recognize", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({image: imageData})
+    });
 
+    let data = await response.json();
 
-
+    if (data.status === "matched") {
+        alert("Attendance Marked for: " + data.regno);
+    } else {
+        console.log("No Match");
+    }
+}

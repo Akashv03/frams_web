@@ -31,7 +31,7 @@
                     <!-- <p>Enter your administrative credentials</p> -->
                 </div>
 
-                <form onsubmit="return login()">
+                <form onsubmit="return login(event)">
                     <!-- <form action="/attendance" method="get"> -->
                         <div class="input-group">
                             <label>Username</label>
@@ -59,7 +59,7 @@
         <h2>Student Enrollment</h2>
     </div>
 
-    <form onsubmit="return saveStudent()" class="compact-form">
+    <form onsubmit="return saveStudent(event)" class="compact-form">
         <div class="form-main-grid">
             
             <div class="fields-column">
@@ -69,21 +69,21 @@
                 </div>
                 <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="password" placeholder="......." required>
+                    <input type="password" id="regPassword" placeholder="......." required>
                 </div>
                 <div class="input-group">
                     <label>Full Name</label>
-                    <input type="text" placeholder="e.g. Nithish" required>
+                    <input type="text" id="fullname" placeholder="e.g. Nithish" required>
                 </div>
 
                 <div class="input-group">
                     <label>Date of Birth</label>
-                    <input type="date" required>
+                    <input type="date" id="dob" required>
                 </div>
 
                 <div class="input-group">
                     <label>Department</label>
-                    <select class="black-select" required>
+                    <select class="black-select" id="department" required>
                         <option value="" disabled selected>Select Dept</option>
                         <option>Computer Science</option>
                         <option>Engineering</option>
@@ -94,11 +94,11 @@
                 <div class="dual-row">
                     <div class="input-group">
                         <label>Course</label>
-                        <input type="text" placeholder="e.g. MCA" required>
+                        <input type="text" id="course" placeholder="e.g. MCA" required>
                     </div>
                     <div class="input-group">
                         <label>Year</label>
-                        <select class="black-select" required>
+                        <select class="black-select" id="year" required>
                             <option value="" disabled selected>Year</option>
                             <option>1st</option>
                             <option>2nd</option>
@@ -124,6 +124,7 @@
                     <button type="button" class="btn-cam" onclick="startCamera()">Open</button>
                     <button type="button" class="btn-cam" onclick="stopCamera()">Close</button>
                     <button type="button" class="btn-cam capture" onclick="autoCapture()">Capture</button>
+                    <p id="captureStatus" style="margin-top:10px; font-weight:600;"></p>
                     
                 </div>
             </div>
