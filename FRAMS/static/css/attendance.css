@@ -107,14 +107,40 @@ body, html {
     gap: 20px;
 }
 
-#preview {
-    width: 100px;
-    height: 100px;
-    background: #0d1117;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    object-fit: cover;
+
+.id-status {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 100px; /* Status mattum oru pill shape-la irukkum */
 }
+#preview {
+    width: 140px;           /* Photo size ah konjam perusu panniyachu */
+    height: 140px;
+    background: #000;
+    
+    /* Box Look */
+    border-radius: 12px;    /* 50% kudutha circle aagum, 12px kudutha neat corner box aagum */
+    border: 2px solid var(--accent);
+    
+    /* Shadow and Polish */
+    object-fit: cover;      /* Photo stretch aagama crt-ah fit aagum */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 
+                inset 0 0 15px rgba(47, 129, 247, 0.2);
+    
+    /* Hover effect */
+    transition: transform 0.3s ease;
+}
+
+#preview:hover {
+    transform: scale(1.02); /* Slight zoom on hover */
+    border-color: #fff;     /* Focus panna white border varum */
+}
+
+
 
 .id-status { font-weight: 700; color: #238636; font-size: 0.9rem; }
 
@@ -133,12 +159,49 @@ input {
     outline: none;
 }
 
-.refresh{
-    background: var(--accent); color: white; box-shadow: 0 0 15px rgba(47, 129, 247, 0.3);
-    padding: 10px;
-    border-radius: 10px;
-    
+#shift {
+    font-weight: bold;
+    color: #22c55e;
+}
 
+
+.refresh {
+    /* Subtle Design */
+    background: rgba(255, 255, 255, 0.03); /* Romba light-ah oru glass effect */
+    color: var(--dim); 
+    border: 1px solid var(--border);
+    
+    /* Layout & Centering */
+    padding: 10px 24px;
+    border-radius: 8px;
+    width: fit-content;
+    display: block;      /* Block element-ah mathikalam */
+    margin: 20px auto 0; /* Top-la gap, Left/Right 'auto' panna center aayidum */
+    
+    /* Typography */
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px; /* Professional spacing */
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.refresh:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border-color: var(--accent); /* Hover-la mattum blue border varum */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    letter-spacing: 1.5px; /* Subtle expansion effect */
+}
+
+.refresh:active {
+    transform: translateY(0px);
+    background: var(--accent);
+    color: white;
 }
 
 /* Buttons */
@@ -150,3 +213,38 @@ input {
 .btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
 
 @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    padding: 15px 20px;
+    border-radius: 10px;
+    background: #151921;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-left: 5px solid var(--accent);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.toast.success { border-left-color: #2ea043; background: rgba(46, 160, 67, 0.15); border: 1px solid rgba(46, 160, 67, 0.2); border-left-width: 5px; }
+.toast.error { border-left-color: #da3633; background: rgba(218, 54, 51, 0.15); border: 1px solid rgba(218, 54, 51, 0.2); border-left-width: 5px; }
+.toast.warning { border-left-color: #d29922; background: rgba(210, 153, 34, 0.15); border: 1px solid rgba(210, 153, 34, 0.2); border-left-width: 5px; }

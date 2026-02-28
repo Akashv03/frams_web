@@ -1,0 +1,151 @@
+--- Root Variables ---
+:root {
+    --primary-blue: #0d6efd;
+    --dark-blue: #0a58ca;
+    --sidebar-bg: #ffffff;
+    --body-bg: #f4f7fe;
+    --text-main: #2d3748;
+    --text-muted: #718096;
+    --sidebar-width: 260px;
+    --transition-speed: 0.3s;
+}
+
+/* --- General Styles --- */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--body-bg);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+/* Push content down to account for fixed navbar */
+.content {
+    margin-top: 60px;
+    width: 100%;
+    transition: all var(--transition-speed);
+}
+
+/* --- Navbar --- */
+.navbar {
+    z-index: 1030;
+    height: 70px;
+}
+
+.navbar-brand {
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: calc(100vh - 70px);
+    margin-top: 70px;
+    transition: all var(--transition-speed);
+    z-index: 1000;
+}
+
+/* Sidebar Toggle Logic (Class added via JS) */
+.sidebar.collapsed {
+    margin-left: calc(-1 * var(--sidebar-width));
+}
+
+.sidebar .nav-link {
+    color: var(--text-muted);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 4px 0;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #f0f4ff;
+    color: var(--primary-blue);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--primary-blue);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+.sidebar .nav-link i {
+    font-size: 1.1rem;
+}
+
+/* --- Dashboard Cards --- */
+.dashboard-card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.dashboard-card h6 {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.dashboard-card h3 {
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0;
+}
+
+/* --- Tables & Content Cards --- */
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.table {
+    vertical-align: middle;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid #edf2f7;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.badge {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* --- Buttons --- */
+#toggleSidebar {
+    border-radius: 8px;
+    padding: 5px 12px;
+}
+
+.btn-danger {
+    margin-top: 20px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+    }
+    .sidebar.collapsed {
+        left: -100%;
+    }
+    .navbar-brand {
+        font-size: 0.8rem;
+    }
+}

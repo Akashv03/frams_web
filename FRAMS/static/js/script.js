@@ -1,37 +1,66 @@
 // LOGIN
+// async function login(event) {
+//     event.preventDefault(); // stop page reload
+
+//     let user = document.getElementById("username").value;
+//     let pass = document.getElementById("password").value;
+
+//     try {
+//         let res = await fetch("/student-login", {
+//             method: "POST",
+//             headers: {"Content-Type": "application/json"},
+//             body: JSON.stringify({regno: user, password: pass})
+//         });
+
+//         let result = await res.json();
+//         console.log(result);
+
+//         if (result.status === "success") {
+//             if (result.role === "admin") {
+//                 window.location.href = "/attendance"; // Admin page
+//             } else if (result.role === "student") {
+//                 // Pass student regno as query param (optional)
+//                 window.location.href = `/student-dashboard?regno=${result.regno}`;
+//             }
+//         } else {
+//             alert("❌ " + result.message);
+//         }
+
+//     } catch (err) {
+//         console.error(err);
+//         alert("❌ Network error");
+//     }
+
+//     return false;
+// }
 async function login(event) {
-    event.preventDefault(); // stop page reload
+    event.preventDefault();
 
     let user = document.getElementById("username").value;
     let pass = document.getElementById("password").value;
 
-    try {
-        let res = await fetch("/student-login", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({regno: user, password: pass})
-        });
+    let res = await fetch("/student-login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({regno: user, password: pass})
+    });
 
-        let result = await res.json();
-        console.log(result);
+    let result = await res.json();
 
-        if (result.status === "success") {
-            if (result.role === "admin") {
-                window.location.href = "/attendance"; // Admin page
-            } else if (result.role === "student") {
-                // Pass student regno as query param (optional)
-                window.location.href = `/student-dashboard?regno=${result.regno}`;
-            }
-        } else {
-            alert("❌ " + result.message);
+    if (result.status === "success") {
+
+        if (result.role === "admin") {
+            sessionStorage.setItem('registerNo', "24mca066")
+            window.location.href = "/admin-dashboard";
         }
 
-    } catch (err) {
-        console.error(err);
-        alert("❌ Network error");
-    }
+        if (result.role === "student") {
+            window.location.href = "/student-dashboard";
+        }
 
-    return false;
+    } else {
+        alert("❌ " + result.message);
+    }
 }
 
 
@@ -54,12 +83,12 @@ async function startCamera() {
         video.srcObject = stream;
 
         placeholder.style.display = "none";
-        statusText.innerHTML = "📷 Camera Started... Preparing capture...";
+        statusText.innerHTML = "Camera Started... Preparing capture...";
 
         // Start auto capture after 2 seconds
-        setTimeout(() => {
-            autoCapture();
-        }, 2000);
+        // setTimeout(() => {
+        //     autoCapture();
+        // }, 2000);
 
     } catch (error) {
         statusText.innerHTML = "❌ Unable to access camera";
@@ -77,7 +106,7 @@ function stopCamera() {
 
     clearInterval(captureInterval);
     isCapturing = false;
-    statusText.innerHTML = "📴 Camera Stopped";
+    statusText.innerHTML = "Camera Stopped";
 }
 
 // Auto Capture Function
@@ -193,23 +222,4 @@ async function saveStudent(event) {
     }
 
     return false;
-}
-
-//face recognize
-
-async function recognizeFace(imageData) {
-
-    let response = await fetch("/recognize", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({image: imageData})
-    });
-
-    let data = await response.json();
-
-    if (data.status === "matched") {
-        alert("Attendance Marked for: " + data.regno);
-    } else {
-        console.log("No Match");
-    }
 }

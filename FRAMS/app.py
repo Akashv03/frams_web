@@ -1,41 +1,72 @@
-from flask import Flask, render_template,jsonify,request,render_template
-from database import get_db_connection
+from flask import Flask, render_template, jsonify, request
+from flask import session, redirect, url_for
+from werkzeug.security import check_password_hash
 import cv2
 import numpy as np
 import base64
 import os
-import json
 import pickle
 import mysql.connector
+from datetime import datetime
+
 
 app = Flask(__name__)
 
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
+app.secret_key = "super_secret_key"
 
+#------MySQL Connection------
+
+def get_db():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",        # change if needed
+        password="akash2003",    # your MySQL password
+        database="face_rams"
+    )
+
+
+#------LOGIN------
 
 @app.route("/")
 def login_page():
     return render_template("login.html")
 
+#------LOGOUT------
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+# ----- ADMIN DASHBOARD -----
+@app.route("/admin-dashboard")
+def admin_dashboard():
+    if "admin" not in session:
+        return redirect("/")
+    return render_template("admin_dashboard.html")
+
+#------LIVE ATTENDANCE------
+
 @app.route("/attendance")
 def attendance():
+    if "admin" not in session:
+        return redirect("/")
     return render_template("attendance.html")
+#------STUDENT DASHBOARD-----
 
 @app.route("/student-dashboard")
 def student_dashboard():
+    if "student" not in session:
+        return redirect("/")
     return render_template("student_dashboard.html")
 
+#-----FORGOT PASSWORD------
 @app.route("/forgot-password")
 def forgot_password():
     return render_template("forgot_password.html")
 
-@app.route("/start-attendance")
-def start_attendance():
-    return "Attendance started!"
 
-# STUDENT LOGIN
+#------STUDENT LOGIN------
 @app.route("/student-login", methods=["POST"])
 def student_login():
     data = request.get_json()
@@ -44,7 +75,8 @@ def student_login():
 
     # Admin check
     if regno == "admin" and password == "123":
-        return jsonify({"status": "success", "role": "admin"})
+        session["admin"] = regno   # Store session
+        return jsonify({"status": "success", "role": "admin", "redirect": "/admin-dashboard"})
 
     # Student check
     try:
@@ -56,25 +88,19 @@ def student_login():
         conn.close()
 
         if student:
-            return jsonify({"status": "success", "role": "student", "regno": student["regno"]})
+            session["student"] = student["regno"]
+            return jsonify({
+                "status": "success",
+                "role": "student",
+                "redirect": "/student-dashboard"
+            })
         else:
             return jsonify({"status": "error", "message": "Invalid credentials!"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
 
-
-# MySQL Connection
-
-def get_db():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",        # change if needed
-        password="akash2003",    # your MySQL password
-        database="face_rams"
-    )
-
-# Student Registration API
+#------Student Registration API------
 
 @app.route("/studentregister", methods=["POST"])
 def register_student():
@@ -115,7 +141,7 @@ def register_student():
 
 
 
-# FACE CAPTURE WITH TRAIN & TEST SPLIT
+#------FACE CAPTURE WITH TRAIN & TEST SPLIT------
 
 @app.route("/autoCapture", methods=["GET", "POST"])
 def autocapture():
@@ -174,6 +200,7 @@ def autocapture():
     return jsonify({"message": f"Total images collected: {total_count}"})
 
 
+#------TRAIN MODEL-----
 def train_model():
 
     train_path = "dataset/train"
@@ -184,15 +211,28 @@ def train_model():
 
     for person in os.listdir(train_path):
         person_path = os.path.join(train_path, person)
+
+        if not os.path.isdir(person_path):
+            continue
+
         label_map[label_id] = person
 
         for img_name in os.listdir(person_path):
             img_path = os.path.join(person_path, img_name)
             img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+            if img is None:
+                continue
+
+            img = cv2.resize(img, (200, 200))
             faces.append(img)
             labels.append(label_id)
 
         label_id += 1
+
+    if len(faces) == 0:
+        print("⚠ No training data found")
+        return
 
     faces = np.array(faces)
     labels = np.array(labels)
@@ -201,7 +241,13 @@ def train_model():
     model.train(faces, labels)
     model.save("model.yml")
 
+    # Save label map
+    with open("labels.pkl", "wb") as f:
+        pickle.dump(label_map, f)
+
     print("✅ Model Trained Successfully")
+
+#------TEST MODEL-----
 
 def test_model():
 
@@ -212,13 +258,8 @@ def test_model():
     correct = 0
     total = 0
 
-    label_id = 0
-    label_map = {}
-
-    # create label map again
-    for person in os.listdir("dataset/train"):
-        label_map[label_id] = person
-        label_id += 1
+    with open("labels.pkl", "rb") as f:
+        label_map = pickle.load(f)
 
     for label, person in label_map.items():
         person_path = os.path.join(test_path, person)
@@ -241,14 +282,16 @@ def test_model():
     print(f"🎯 Test Accuracy: {accuracy:.2f}%")
     return accuracy
 
-#Face Recognize
+#------LIVE FACE RECOGNIZE------
+
 @app.route("/recognize", methods=["POST"])
 def recognize():
+
+    import pickle
 
     data = request.json
     image_data = data["image"]
 
-    # Decode base64 image
     image_data = image_data.split(",")[1]
     img_bytes = base64.b64decode(image_data)
     np_arr = np.frombuffer(img_bytes, np.uint8)
@@ -257,7 +300,9 @@ def recognize():
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    detected_faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    if len(detected_faces) == 0:
+        return jsonify({"status": "no_face_detected"})
 
     if not os.path.exists("model.yml"):
         return jsonify({"status": "error", "message": "Model not trained yet"})
@@ -265,31 +310,83 @@ def recognize():
     model = cv2.face.LBPHFaceRecognizer_create()
     model.read("model.yml")
 
-    # Create label map
-    label_map = {}
-    label_id = 0
-    for person in os.listdir("dataset/train"):
-        label_map[label_id] = person
-        label_id += 1
+    with open("labels.pkl", "rb") as f:
+        label_map = pickle.load(f)
 
-    for (x, y, w, h) in faces:
+    for (x, y, w, h) in detected_faces:
 
         face_img = gray[y:y+h, x:x+w]
         face_img = cv2.resize(face_img, (200, 200))
 
         predicted_label, confidence = model.predict(face_img)
+        if predicted_label not in label_map:
+            return jsonify({"status": "unknown_face"})
 
         print("Confidence:", confidence)
+        
 
-        # LOWER confidence = better match
-        if confidence < 80:
+
+        if confidence < 60:
+
             regno = label_map[predicted_label]
 
-            return jsonify({
-                "status": "matched",
-                "regno": regno,
-                "confidence": float(confidence)
-            })
+            conn = get_db()
+            cursor = conn.cursor(dictionary=True)
+
+            # Get student details
+            cursor.execute(
+                "SELECT fullname, department, course, year FROM student WHERE regno=%s",
+                (regno,)
+            )
+            student = cursor.fetchone()
+
+            if student:
+
+                now = datetime.now()
+                today_date = now.date()
+                current_time = now.strftime("%H:%M:%S")
+
+                # Decide shift
+                if now.hour < 12:
+                    shift = "Morning"
+                else:
+                    shift = "Evening"
+
+                # Check duplicate attendance
+                cursor.execute("""
+                    SELECT * FROM attendance 
+                    WHERE regno=%s AND date=%s AND shift=%s
+                """, (regno, today_date, shift))
+
+                already = cursor.fetchone()
+
+                if not already:
+                    cursor.execute("""
+                        INSERT INTO attendance (regno, name, date, shift, time)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (regno, student["fullname"], today_date, shift, current_time))
+
+                    conn.commit()
+
+                    status = "matched"
+                else:
+                    status = "already_marked"
+
+                conn.close()
+
+                return jsonify({
+                    "status": status,
+                    "regno": regno,
+                    "name": student["fullname"],
+                    "dept": student["department"],
+                    "course": student["course"],
+                    "year": student["year"],
+                    "image": data["image"],
+                    "date": str(today_date),
+                    "time": current_time,
+                    "shift": shift,
+                    "confidence": float(confidence)
+                })
 
     return jsonify({"status": "not_matched"})
 

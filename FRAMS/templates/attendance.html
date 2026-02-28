@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/attendance.css') }}">
 </head>
+
 <body>
 
 <div class="app-shell">
@@ -85,15 +86,20 @@
                             <input id="time" type="text" readonly placeholder="00:00:00">
                         </div>
                     </div>
+                    <div class="input-group">
+                        <label>Shift</label>
+                        <input type="text" id="shift" readonly>
+                    </div>
 
                     <button class="refresh" onclick="refreshPage()" class="btn btn-outline">Refresh</button>
+                    
                 </div>
             </div>
         </section>
         
     </div>
 </div>
-
+<div id="toast-container" class="toast-container"></div>
 <script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
 </body>
 </html>
