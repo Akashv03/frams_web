@@ -1,65 +1,32 @@
-// LOGIN
-// async function login(event) {
-//     event.preventDefault(); // stop page reload
-
-//     let user = document.getElementById("username").value;
-//     let pass = document.getElementById("password").value;
-
-//     try {
-//         let res = await fetch("/student-login", {
-//             method: "POST",
-//             headers: {"Content-Type": "application/json"},
-//             body: JSON.stringify({regno: user, password: pass})
-//         });
-
-//         let result = await res.json();
-//         console.log(result);
-
-//         if (result.status === "success") {
-//             if (result.role === "admin") {
-//                 window.location.href = "/attendance"; // Admin page
-//             } else if (result.role === "student") {
-//                 // Pass student regno as query param (optional)
-//                 window.location.href = `/student-dashboard?regno=${result.regno}`;
-//             }
-//         } else {
-//             alert("❌ " + result.message);
-//         }
-
-//     } catch (err) {
-//         console.error(err);
-//         alert("❌ Network error");
-//     }
-
-//     return false;
-// }
 async function login(event) {
     event.preventDefault();
 
-    let user = document.getElementById("username").value;
-    let pass = document.getElementById("password").value;
+    let username = document.getElementById("username").value;
+    let password = document.getElementById("password").value;
 
-    let res = await fetch("/student-login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({regno: user, password: pass})
-    });
+    try {
+        let res = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
 
-    let result = await res.json();
+        let result = await res.json();
 
-    if (result.status === "success") {
-
-        if (result.role === "admin") {
-            sessionStorage.setItem('registerNo', "24mca066")
-            window.location.href = "/admin-dashboard";
+        if (result.status === "success") {
+            window.location.href = result.redirect;
+        } else {
+            alert("❌ " + result.message);
         }
 
-        if (result.role === "student") {
-            window.location.href = "/student-dashboard";
-        }
-
-    } else {
-        alert("❌ " + result.message);
+    } catch (error) {
+        console.error("Login error:", error);
+        alert("⚠ Server error");
     }
 }
 

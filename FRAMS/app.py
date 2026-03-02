@@ -1,6 +1,6 @@
-from flask import Flask, render_template, jsonify, request
-from flask import session, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect
 from werkzeug.security import check_password_hash
+from flask import jsonify, session
 import cv2
 import numpy as np
 import base64
@@ -35,13 +35,13 @@ def login_page():
 
 @app.route("/logout")
 def logout():
-    session.clear()
+    session.clear()   # remove all session data
     return redirect("/")
 
 # ----- ADMIN DASHBOARD -----
 @app.route("/admin-dashboard")
 def admin_dashboard():
-    if "admin" not in session:
+    if session.get("role") != "admin":
         return redirect("/")
     return render_template("admin_dashboard.html")
 
@@ -56,7 +56,7 @@ def attendance():
 
 @app.route("/student-dashboard")
 def student_dashboard():
-    if "student" not in session:
+    if session.get("role") != "student":
         return redirect("/")
     return render_template("student_dashboard.html")
 
@@ -66,60 +66,59 @@ def forgot_password():
     return render_template("forgot_password.html")
 
 
-#------STUDENT LOGIN------
-@app.route("/student-login", methods=["POST"])
-def student_login():
+#------LOGIN LOGIC------
+@app.route("/login", methods=["POST"])
+def login():
     data = request.get_json()
-    regno = data.get("regno")
+    username = data.get("username")
     password = data.get("password")
 
-    # Admin check
-    if regno == "admin" and password == "123":
-        session["admin"] = regno   # Store session
-        return jsonify({"status": "success", "role": "admin", "redirect": "/admin-dashboard"})
+    conn = get_db()
+    cur = conn.cursor(dictionary=True)
 
-    # Student check
-    try:
-        conn = get_db()
-        cur = conn.cursor(dictionary=True)
-        cur.execute("SELECT * FROM student WHERE regno=%s AND password=%s", (regno, password))
-        student = cur.fetchone()
-        cur.close()
-        conn.close()
+    cur.execute("SELECT * FROM user WHERE username=%s AND password=%s",
+                (username, password))
+    user = cur.fetchone()
 
-        if student:
-            session["student"] = student["regno"]
+    cur.close()
+    conn.close()
+
+    if user:
+        session["username"] = username
+        session["role"] = user["role"]
+
+        if user["role"] == "admin":
             return jsonify({
                 "status": "success",
-                "role": "student",
+                "redirect": "/admin-dashboard"
+            })
+
+        elif user["role"] == "student":
+            return jsonify({
+                "status": "success",
                 "redirect": "/student-dashboard"
             })
-        else:
-            return jsonify({"status": "error", "message": "Invalid credentials!"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)})
 
+    return jsonify({"status": "error", "message": "Invalid credentials"})
 
 #------Student Registration API------
 
 @app.route("/studentregister", methods=["POST"])
 def register_student():
     data = request.get_json()
-    print("Incoming data:", data)
 
     try:
         conn = get_db()
         cur = conn.cursor()
 
-        sql = """
-        INSERT INTO student
-        (regno, password, fullname, dob, department, course, year)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        # 1️⃣ Insert into student table
+        student_sql = """
+        INSERT INTO student (regno, fullname, dob, department, course, year)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """
 
-        values = (
+        student_values = (
             data["regno"],
-            data["password"],
             data["fullname"],
             data["dob"],
             data["department"],
@@ -127,18 +126,30 @@ def register_student():
             data["year"]
         )
 
-        cur.execute(sql, values)
+        cur.execute(student_sql, student_values)
+
+        # 2️⃣ Insert into user table
+        user_sql = """
+        INSERT INTO user (username, password, role)
+        VALUES (%s, %s, %s)
+        """
+
+        user_values = (
+            data["regno"],      # username = regno
+            data["password"],
+            "student"           # 🔒 Force role student
+        )
+
+        cur.execute(user_sql, user_values)
+
         conn.commit()
         cur.close()
         conn.close()
 
         return jsonify({"status": "success"})
 
-    except mysql.connector.Error as err:
-        print("Database Error:", err)
-        return jsonify({"status": "error", "message": str(err)})
-
-
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)})
 
 
 #------FACE CAPTURE WITH TRAIN & TEST SPLIT------
@@ -333,7 +344,7 @@ def recognize():
             conn = get_db()
             cursor = conn.cursor(dictionary=True)
 
-            # Get student details
+            # Get user details
             cursor.execute(
                 "SELECT fullname, department, course, year FROM student WHERE regno=%s",
                 (regno,)

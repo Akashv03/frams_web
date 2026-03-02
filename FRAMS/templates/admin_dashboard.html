@@ -2,151 +2,325 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>FRAMS - Admin Dashboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition · Attendance System</title>
+    <!-- Font Awesome 6 (professional icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- ===== EXTERNAL CSS ===== -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+    <style>
+        /* emergency micro reset */
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { display:flex; background:#f0f7ff; height:100vh; overflow:hidden; }
+    </style>
 </head>
 <body>
+    <!-- 
+        ========== PROFESSIONAL FACE RECOGNITION ATTENDANCE SYSTEM ==========
+        Top section: live face recognition + attendance stats
+    -->
 
-<!-- Top Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow">
-    <div class="container-fluid">
-        <button class="btn btn-light me-3" id="toggleSidebar">
-            <i class="bi bi-list"></i>
-        </button>
-        <span class="navbar-brand fw-bold">
-            FACE RECOGNITION ATTENDANCE MANAGEMENT SYSTEM
-        </span>
+    <!-- SIDEBAR (clean professional with logout) -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h2>FaceAttend<span class="badge-admin">admin</span></h2>
+        </div>
 
-        <div class="ms-auto d-flex align-items-center">
-            <i class="bi bi-person-circle text-white fs-4 me-3"></i>
-            <button class="btn btn-light btn-sm">Logout</button>
+        <nav class="nav-menu" id="sidebarNav">
+            <!-- Dashboard -->
+            <div class="nav-item active" data-section="dashboard">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </div>
+            <!-- Live Face Recognition (primary) -->
+            <div class="nav-item" data-section="facerec">
+                <i class="fas fa-camera"></i>
+                <span>Live Face Recognition</span>
+            </div>
+            <!-- Manage Students -->
+            <div class="nav-item" data-section="students">
+                <i class="fas fa-user-graduate"></i>
+                <span>Manage Students</span>
+            </div>
+            <!-- Manage Subjects -->
+            <div class="nav-item" data-section="subjects">
+                <i class="fas fa-book"></i>
+                <span>Manage Subjects</span>
+            </div>
+            <!-- Attendance Monitor -->
+            <div class="nav-item" data-section="attendance">
+                <i class="fas fa-calendar-check"></i>
+                <span>Attendance Monitor</span>
+            </div>
+            <!-- Reports -->
+            <div class="nav-item" data-section="reports">
+                <i class="fas fa-chart-pie"></i>
+                <span>Reports</span>
+            </div>
+
+            <div class="nav-divider"></div>
+
+            <!-- Settings -->
+            <div class="nav-item" data-section="settings">
+                <i class="fas fa-sliders-h"></i>
+                <span>Settings</span>
+            </div>
+        </nav>
+
+        <!-- footer profile with LOGOUT button -->
+        <div class="sidebar-footer">
+            <div class="footer-avatar">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="footer-info">
+                <span class="admin-name">Dr. Sarah Chen</span>
+                <span class="admin-role">Lead Administrator</span>
+            </div>
+            <button class="logout-btn" id="logoutButton" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
         </div>
     </div>
-</nav>
 
-<div class="d-flex">
+    <!-- MAIN PANEL -->
+    <main class="main-content">
+        <!-- top bar (dynamic) -->
+        <header class="top-bar">
+            <div class="page-title" id="currentPageTitle">
+                Face Recognition <span id="titleSuffix">attendance system</span>
+            </div>
+            <div class="profile-actions">
+                <div class="notification-badge" id="notificationBell">
+                    <i class="far fa-bell"></i>
+                </div>
+                <div class="admin-profile-pic">SC</div>
+            </div>
+        </header>
 
-    <!-- Sidebar -->
-    <div class="sidebar bg-white shadow" id="sidebar">
-        <ul class="nav flex-column p-3">
-            <li class="nav-item"><a class="nav-link active" href="#"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-people me-2"></i>Student Management</a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar-check me-2"></i>Attendance</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('attendance') }}"><i class="bi bi-camera-video me-2"></i>Live Recognition</a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-bar-chart me-2"></i>Reports</a></li>
-            <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-            <!-- <li class="nav-item"><a class="nav-link text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li> -->
-            <a href="/logout" class="btn btn-danger">Logout</a>
-        </ul>
-    </div>
-
-    <!-- Main Content -->
-    <div class="content p-4">
-
-        <!-- Dashboard Cards -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="card dashboard-card shadow-sm">
-                    <div class="card-body">
-                        <h6>Total Students</h6>
-                        <h3>250</h3>
+        <!-- ===== SECTION: DASHBOARD (with FACE RECOGNITION at top) ===== -->
+        <section id="dashboardSection" class="section active-section">
+            <!-- FACE RECOGNITION TOP PANEL (professional camera + stats) -->
+            <div class="face-recognition-top">
+                <div class="face-panel-header">
+                    <h3><i class="fas fa-camera"></i> Live Face Recognition · Attendance Overview</h3>
+                    <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+                </div>
+                <div class="face-grid-top">
+                    <!-- left: camera feed -->
+                    <div class="camera-feed-top">
+                        <div class="camera-placeholder">
+                            <i class="fas fa-camera"></i>
+                            <div class="scan-animation"></div>
+                            <div class="detection-box"></div>
+                        </div>
+                        <div class="camera-stats-mini">
+                            <span><i class="fas fa-check-circle" style="color:#22c55e;"></i> 18 recognized</span>
+                            <span><i class="fas fa-question-circle" style="color:#eab308;"></i> 2 unknown</span>
+                            <span><i class="fas fa-chart-line"></i> 98% accuracy</span>
+                        </div>
+                    </div>
+                    <!-- right: today's attendance & recognition log -->
+                    <div class="attendance-quick">
+                        <div class="quick-stat">
+                            <span class="stat-label">Today's Attendance</span>
+                            <span class="stat-value">94%</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="stat-label">Present</span>
+                            <span class="stat-value">1,024</span>
+                        </div>
+                        <div class="quick-stat">
+                            <span class="stat-label">Absent</span>
+                            <span class="stat-value">68</span>
+                        </div>
+                        <div class="recent-log">
+                            <div><i class="fas fa-circle" style="color:#22c55e; font-size:0.6rem;"></i> Emma Watson · 08:32 AM</div>
+                            <div><i class="fas fa-circle" style="color:#22c55e; font-size:0.6rem;"></i> James Lee · 08:35 AM</div>
+                            <div><i class="fas fa-circle" style="color:#eab308; font-size:0.6rem;"></i> Unknown · 08:41 AM</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card dashboard-card shadow-sm">
-                    <div class="card-body">
-                        <h6>Today Present</h6>
-                        <h3>210</h3>
-                    </div>
+            <!-- stat cards (dashboard metrics) -->
+            <div class="cards-grid">
+                <div class="stat-card">
+                    <div class="stat-left"><h4>TOTAL STUDENTS</h4><div class="value">1,284</div></div>
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left"><h4>SUBJECTS</h4><div class="value">48</div></div>
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left"><h4>ATTENDANCE</h4><div class="value">94%</div></div>
+                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-left"><h4>ACTIVE NOW</h4><div class="value">342</div></div>
+                    <div class="stat-icon"><i class="fas fa-video"></i></div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card dashboard-card shadow-sm">
-                    <div class="card-body">
-                        <h6>Today Absent</h6>
-                        <h3>40</h3>
+            <!-- recent activity + subjects preview -->
+            <div class="dashboard-grid">
+                <div class="recent-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-clock"></i> Recent Recognitions</h3>
+                        <span class="pill-badge">last 10 min</span>
+                    </div>
+                    <div class="recognition-timeline">
+                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Olivia Park · 09:15 AM</div>
+                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Liam Chen · 09:12 AM</div>
+                        <div><i class="fas fa-question-circle" style="color:#eab308;"></i> Unknown face · 09:04 AM</div>
+                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Emma Watson · 08:58 AM</div>
+                    </div>
+                </div>
+                <div class="recent-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-book"></i> Today's Subjects</h3>
+                        <span class="pill-badge">8 classes</span>
+                    </div>
+                    <div class="subject-list">
+                        <span class="subject-tag">Mathematics 10A</span>
+                        <span class="subject-tag">Physics 11B</span>
+                        <span class="subject-tag">Chemistry 12C</span>
+                        <span class="subject-tag">Computer Science</span>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div class="col-md-3">
-                <div class="card dashboard-card shadow-sm">
-                    <div class="card-body">
-                        <h6>Attendance %</h6>
-                        <h3>84%</h3>
+        <!-- ===== SECTION: LIVE FACE RECOGNITION (full page) ===== -->
+        <section id="faceRecognitionSection" class="section">
+            <div class="face-grid-full">
+                <!-- main camera -->
+                <div class="camera-main">
+                    <div class="panel-header" style="color:white; border-bottom-color:#2d4a76;">
+                        <h3 style="color:white;"><i class="fas fa-camera"></i> Live Recognition Feed</h3>
+                        <span class="live-badge-pill"><i class="fas fa-circle"></i> LIVE</span>
+                    </div>
+                    <div class="camera-feed-large">
+                        <i class="fas fa-camera"></i>
+                        <div class="scanning-overlay"></div>
+                        <div class="face-box">FACE DETECTED</div>
+                    </div>
+                    <div class="face-stats-detailed">
+                        <div class="face-stat-item">
+                            <span class="label">Detected today</span>
+                            <span class="value">342</span>
+                        </div>
+                        <div class="face-stat-item">
+                            <span class="label">Unique faces</span>
+                            <span class="value">289</span>
+                        </div>
+                        <div class="face-stat-item">
+                            <span class="label">Accuracy</span>
+                            <span class="value">98.3%</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- right panel: recognition log -->
+                <div class="recognition-log">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-list"></i> Recognition Log</h3>
+                        <span class="pill-badge">real-time</span>
+                    </div>
+                    <div class="log-entries">
+                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Emma Watson · 98% · 09:32 AM</div>
+                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> James Lee · 96% · 09:30 AM</div>
+                        <div class="log-row"><i class="fas fa-question-circle" style="color:#eab308;"></i> Unknown · 45% · 09:28 AM</div>
+                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Olivia Park · 99% · 09:25 AM</div>
+                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Liam Chen · 97% · 09:20 AM</div>
                     </div>
                 </div>
             </div>
+        </section>
+
+        <!-- ===== SECTION: MANAGE STUDENTS ===== -->
+        <section id="studentsSection" class="section">
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-user-graduate"></i> Student Directory</h3>
+                    <span class="pill-badge">active: 1,021</span>
+                </div>
+                <div class="action-bar">
+                    <span class="subject-tag"><i class="fas fa-search"></i> search</span>
+                    <span class="subject-tag">filter by grade</span>
+                    <span class="subject-tag">export list</span>
+                </div>
+                <div class="table-mock">
+                    <i class="fas fa-id-card"></i> student table with pagination
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION: MANAGE SUBJECTS ===== -->
+        <section id="subjectsSection" class="section">
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-book"></i> Subject Management</h3>
+                    <span class="pill-badge">spring 2026</span>
+                </div>
+                <div class="subject-cloud">
+                    <span class="subject-tag">Mathematics (6)</span>
+                    <span class="subject-tag">Sciences (5)</span>
+                    <span class="subject-tag">Languages (4)</span>
+                    <span class="subject-tag">Humanities (3)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION: ATTENDANCE MONITOR ===== -->
+        <section id="attendanceSection" class="section">
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-calendar-check"></i> Live Attendance Monitor</h3>
+                    <span class="pill-badge">updated 1 min ago</span>
+                </div>
+                <div class="attendance-grid">
+                    <div class="attendance-row"><span>Grade 9C</span><span class="att-percent">96%</span></div>
+                    <div class="attendance-row"><span>Grade 10B</span><span class="att-percent">84%</span></div>
+                    <div class="attendance-row"><span>Grade 11A</span><span class="att-percent">91%</span></div>
+                    <div class="attendance-row"><span>Grade 12D</span><span class="att-percent">76%</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION: REPORTS ===== -->
+        <section id="reportsSection" class="section">
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-pie"></i> Recent Reports</h3>
+                    <span class="pill-badge">PDF / excel</span>
+                </div>
+                <div class="report-list">
+                    <div><i class="far fa-file-pdf" style="color:#d43f34;"></i> attendance_q1_2026.pdf</div>
+                    <div><i class="far fa-file-excel" style="color:#1f7b4d;"></i> student_performance_mar.xlsx</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION: SETTINGS ===== -->
+        <section id="settingsSection" class="section">
+            <div class="recent-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-sliders-h"></i> System Settings</h3>
+                    <span class="pill-badge">admin</span>
+                </div>
+                <div class="settings-list">
+                    <div class="settings-option"><i class="fas fa-toggle-on"></i> two-factor authentication (on)</div>
+                    <div class="settings-option"><i class="fas fa-bell"></i> notification preferences</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dashboard-footer">
+            <i class="far fa-check-circle" style="color:#2563eb;"></i> Face Recognition Attendance System · v2.0
         </div>
+    </main>
 
-        <!-- Chart Section -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5>Attendance Trend</h5>
-                <canvas id="attendanceChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Recent Activity Table -->
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h5>Recent Attendance</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Register No</th>
-                                <th>Name</th>
-                                <th>Department</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>24MCA058</td>  
-                                <td>Akash</td>
-                                <td>MCA</td>
-                                <td>28-02-2026</td>
-                                <td><span class="badge bg-success">Present</span></td>
-                            </tr>
-                            <tr>
-                                <td>24MCA060</td>
-                                <td>Rahul</td>
-                                <td>Rahul</td>
-                                <td>MCA</td>
-                                <td>28-02-2026</td>
-                                <td><span class="badge bg-success">Present</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Custom JS -->
-<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
-
+    <!-- ===== EXTERNAL JAVASCRIPT ===== -->
+    <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
 </body>
 </html>
