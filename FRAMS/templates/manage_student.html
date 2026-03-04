@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_student.css') }}">
+</head>
+<body>
+
+<div class="student-section" id="studentsSection">
+    <div class="section-header">
+        <h2>Manage Students</h2>
+        <button id="addStudentBtn" class="btn-primary">Add Student</button>
+    </div>
+    <button onclick="openSearchModal()">Advanced Search</button>
+
+    <!-- STUDENT TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>RegNo</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody id="studentTableBody">
+            <!-- Data from DB will load here -->
+        </tbody>
+    </table>
+
+
+    <!-- SEARCH MODAL -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSearchModal()">&times;</span>
+            <h3>Search Students</h3>
+
+            <input type="text" id="regno" placeholder="Register No"><br><br>
+            <input type="text" id="name" placeholder="Full Name"><br><br>
+            <input type="text" id="department" placeholder="Department"><br><br>
+            <input type="text" id="year" placeholder="Year"><br><br>
+
+            <button onclick="advancedSearch()">Search</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modalTitle">Add Student</h3>
+            <form id="studentForm">
+                <input type="hidden" id="studentId" />
+                <label>Reg No</label>
+                <input type="text" id="regno" required />
+                <label>Full Name</label>
+                <input type="text" id="fullname" required />
+                <label>DOB</label>
+                <input type="date" id="dob" required />
+                <label>Department</label>
+                <input type="text" id="department" required />
+                <label>Course</label>
+                <input type="text" id="course" required />
+                <label>Year</label>
+                <input type="text" id="year" required />
+                <label>Password</label>
+                <input type="password" id="password" required />
+                <button type="submit" class="btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+<!-- <script src="{{ url_for('static', filename='js/manage_student.js') }}"></script> -->
+</body>
+<script src="{{ url_for('static', filename='js/manage_student.js') }}"></script>
+</html>

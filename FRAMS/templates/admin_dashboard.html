@@ -1,326 +1,255 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Recognition · Attendance System</title>
-    <!-- Font Awesome 6 (professional icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ===== EXTERNAL CSS ===== -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
-    <style>
-        /* emergency micro reset */
-        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
-        body { display:flex; background:#f0f7ff; height:100vh; overflow:hidden; }
-    </style>
-</head>
-<body>
-    <!-- 
-        ========== PROFESSIONAL FACE RECOGNITION ATTENDANCE SYSTEM ==========
-        Top section: live face recognition + attendance stats
-    -->
 
-    <!-- SIDEBAR (clean professional with logout) -->
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FaceAttend Admin Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+
     <div class="admin-sidebar">
+
         <div class="sidebar-header">
-            <h2>FaceAttend<span class="badge-admin">admin</span></h2>
+
+            FRAMS <span class="badge-admin"></span>
+
         </div>
 
-        <nav class="nav-menu" id="sidebarNav">
-            <!-- Dashboard -->
+        <nav class="nav-menu">
+
             <div class="nav-item active" data-section="dashboard">
-                <i class="fas fa-th-large"></i>
-                <span>Dashboard</span>
+
+                <i class="fas fa-th-large"></i><span>Dashboard</span>
+
             </div>
-            <!-- Live Face Recognition (primary) -->
+
             <div class="nav-item" data-section="facerec">
-                <i class="fas fa-camera"></i>
-                <span>Live Face Recognition</span>
+
+                <i class="fas fa-camera"></i><span>Live Face Recognition</span>
+
             </div>
-            <!-- Manage Students -->
+
             <div class="nav-item" data-section="students">
-                <i class="fas fa-user-graduate"></i>
-                <span>Manage Students</span>
+
+                <i class="fas fa-user-graduate"></i><span>Manage Students</span>
+
             </div>
-            <!-- Manage Subjects -->
+
             <div class="nav-item" data-section="subjects">
-                <i class="fas fa-book"></i>
-                <span>Manage Subjects</span>
+
+                <i class="fas fa-book"></i><span>Manage Subjects</span>
+
             </div>
-            <!-- Attendance Monitor -->
+
             <div class="nav-item" data-section="attendance">
-                <i class="fas fa-calendar-check"></i>
-                <span>Attendance Monitor</span>
+
+                <i class="fas fa-calendar-check"></i><span>Attendance Monitor</span>
+
             </div>
-            <!-- Reports -->
+
             <div class="nav-item" data-section="reports">
-                <i class="fas fa-chart-pie"></i>
-                <span>Reports</span>
+
+                <i class="fas fa-chart-pie"></i><span>Reports</span>
+
             </div>
 
             <div class="nav-divider"></div>
 
-            <!-- Settings -->
             <div class="nav-item" data-section="settings">
-                <i class="fas fa-sliders-h"></i>
-                <span>Settings</span>
+
+                <i class="fas fa-sliders-h"></i><span>Settings</span>
+
             </div>
+
         </nav>
 
-        <!-- footer profile with LOGOUT button -->
-        <div class="sidebar-footer">
-            <div class="footer-avatar">
-                <i class="fas fa-user-shield"></i>
-            </div>
-            <div class="footer-info">
-                <span class="admin-name">Dr. Sarah Chen</span>
-                <span class="admin-role">Lead Administrator</span>
-            </div>
-            <button class="logout-btn" id="logoutButton" title="Logout">
-                <i class="fas fa-sign-out-alt"></i>
+
+
+        <!-- Logout Button -->
+
+        <div class="sidebar-logout">
+
+            <button id="logoutBtn">
+
+                <i class="fas fa-sign-out-alt"></i> Logout
+
             </button>
+
         </div>
+
     </div>
 
-    <!-- MAIN PANEL -->
-    <main class="main-content">
-        <!-- top bar (dynamic) -->
-        <header class="top-bar">
-            <div class="page-title" id="currentPageTitle">
-                Face Recognition <span id="titleSuffix">attendance system</span>
-            </div>
-            <div class="profile-actions">
-                <div class="notification-badge" id="notificationBell">
-                    <i class="far fa-bell"></i>
-                </div>
-                <div class="admin-profile-pic">SC</div>
-            </div>
-        </header>
 
-        <!-- ===== SECTION: DASHBOARD (with FACE RECOGNITION at top) ===== -->
-        <section id="dashboardSection" class="section active-section">
-            <!-- FACE RECOGNITION TOP PANEL (professional camera + stats) -->
-            <div class="face-recognition-top">
-                <div class="face-panel-header">
-                    <h3><i class="fas fa-camera"></i> Live Face Recognition · Attendance Overview</h3>
-                    <span class="live-badge"><i class="fas fa-circle"></i> LIVE</span>
+
+    <!-- Main Content -->
+    <div class="main-content">
+    
+        <!-- ================= DASHBOARD SECTION ================= -->
+        <div id="dashboardSection">
+        
+            <h1>Dashboard</h1>
+        
+            <div class="stats-cards">
+                <div class="card">
+                    <h3>Total Students</h3>
+                    <p id="totalStudents">120</p>
                 </div>
-                <div class="face-grid-top">
-                    <!-- left: camera feed -->
-                    <div class="camera-feed-top">
-                        <div class="camera-placeholder">
-                            <i class="fas fa-camera"></i>
-                            <div class="scan-animation"></div>
-                            <div class="detection-box"></div>
-                        </div>
-                        <div class="camera-stats-mini">
-                            <span><i class="fas fa-check-circle" style="color:#22c55e;"></i> 18 recognized</span>
-                            <span><i class="fas fa-question-circle" style="color:#eab308;"></i> 2 unknown</span>
-                            <span><i class="fas fa-chart-line"></i> 98% accuracy</span>
-                        </div>
-                    </div>
-                    <!-- right: today's attendance & recognition log -->
-                    <div class="attendance-quick">
-                        <div class="quick-stat">
-                            <span class="stat-label">Today's Attendance</span>
-                            <span class="stat-value">94%</span>
-                        </div>
-                        <div class="quick-stat">
-                            <span class="stat-label">Present</span>
-                            <span class="stat-value">1,024</span>
-                        </div>
-                        <div class="quick-stat">
-                            <span class="stat-label">Absent</span>
-                            <span class="stat-value">68</span>
-                        </div>
-                        <div class="recent-log">
-                            <div><i class="fas fa-circle" style="color:#22c55e; font-size:0.6rem;"></i> Emma Watson · 08:32 AM</div>
-                            <div><i class="fas fa-circle" style="color:#22c55e; font-size:0.6rem;"></i> James Lee · 08:35 AM</div>
-                            <div><i class="fas fa-circle" style="color:#eab308; font-size:0.6rem;"></i> Unknown · 08:41 AM</div>
-                        </div>
-                    </div>
+            
+                <div class="card">
+                    <h3>Present Today</h3>
+                    <p id="presentToday">95</p>
+                </div>
+            
+                <div class="card">
+                    <h3>Absent Today</h3>
+                    <p id="absentToday">25</p>
+                </div>
+            
+                <div class="card">
+                    <h3>Attendance %</h3>
+                    <p id="attendancePercent">79%</p>
                 </div>
             </div>
-
-            <!-- stat cards (dashboard metrics) -->
-            <div class="cards-grid">
-                <div class="stat-card">
-                    <div class="stat-left"><h4>TOTAL STUDENTS</h4><div class="value">1,284</div></div>
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-left"><h4>SUBJECTS</h4><div class="value">48</div></div>
-                    <div class="stat-icon"><i class="fas fa-book"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-left"><h4>ATTENDANCE</h4><div class="value">94%</div></div>
-                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-left"><h4>ACTIVE NOW</h4><div class="value">342</div></div>
-                    <div class="stat-icon"><i class="fas fa-video"></i></div>
-                </div>
+        
+            <div class="chart-container">
+                <h3>Attendance Graph</h3>
+                <canvas id="attendanceChart" height="150"></canvas>
             </div>
-
-            <!-- recent activity + subjects preview -->
-            <div class="dashboard-grid">
-                <div class="recent-panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-clock"></i> Recent Recognitions</h3>
-                        <span class="pill-badge">last 10 min</span>
-                    </div>
-                    <div class="recognition-timeline">
-                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Olivia Park · 09:15 AM</div>
-                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Liam Chen · 09:12 AM</div>
-                        <div><i class="fas fa-question-circle" style="color:#eab308;"></i> Unknown face · 09:04 AM</div>
-                        <div><i class="fas fa-check-circle" style="color:#22c55e;"></i> Emma Watson · 08:58 AM</div>
-                    </div>
-                </div>
-                <div class="recent-panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-book"></i> Today's Subjects</h3>
-                        <span class="pill-badge">8 classes</span>
-                    </div>
-                    <div class="subject-list">
-                        <span class="subject-tag">Mathematics 10A</span>
-                        <span class="subject-tag">Physics 11B</span>
-                        <span class="subject-tag">Chemistry 12C</span>
-                        <span class="subject-tag">Computer Science</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: LIVE FACE RECOGNITION (full page) ===== -->
-        <section id="faceRecognitionSection" class="section">
-            <div class="face-grid-full">
-                <!-- main camera -->
-                <div class="camera-main">
-                    <div class="panel-header" style="color:white; border-bottom-color:#2d4a76;">
-                        <h3 style="color:white;"><i class="fas fa-camera"></i> Live Recognition Feed</h3>
-                        <span class="live-badge-pill"><i class="fas fa-circle"></i> LIVE</span>
-                    </div>
-                    <div class="camera-feed-large">
-                        <i class="fas fa-camera"></i>
-                        <div class="scanning-overlay"></div>
-                        <div class="face-box">FACE DETECTED</div>
-                    </div>
-                    <div class="face-stats-detailed">
-                        <div class="face-stat-item">
-                            <span class="label">Detected today</span>
-                            <span class="value">342</span>
-                        </div>
-                        <div class="face-stat-item">
-                            <span class="label">Unique faces</span>
-                            <span class="value">289</span>
-                        </div>
-                        <div class="face-stat-item">
-                            <span class="label">Accuracy</span>
-                            <span class="value">98.3%</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- right panel: recognition log -->
-                <div class="recognition-log">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-list"></i> Recognition Log</h3>
-                        <span class="pill-badge">real-time</span>
-                    </div>
-                    <div class="log-entries">
-                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Emma Watson · 98% · 09:32 AM</div>
-                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> James Lee · 96% · 09:30 AM</div>
-                        <div class="log-row"><i class="fas fa-question-circle" style="color:#eab308;"></i> Unknown · 45% · 09:28 AM</div>
-                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Olivia Park · 99% · 09:25 AM</div>
-                        <div class="log-row"><i class="fas fa-check-circle" style="color:#22c55e;"></i> Liam Chen · 97% · 09:20 AM</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: MANAGE STUDENTS ===== -->
-        <section id="studentsSection" class="section">
-            <div class="recent-panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-user-graduate"></i> Student Directory</h3>
-                    <span class="pill-badge">active: 1,021</span>
-                </div>
-                <div class="action-bar">
-                    <span class="subject-tag"><i class="fas fa-search"></i> search</span>
-                    <span class="subject-tag">filter by grade</span>
-                    <span class="subject-tag">export list</span>
-                </div>
-                <div class="table-mock">
-                    <i class="fas fa-id-card"></i> student table with pagination
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: MANAGE SUBJECTS ===== -->
-        <section id="subjectsSection" class="section">
-            <div class="recent-panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-book"></i> Subject Management</h3>
-                    <span class="pill-badge">spring 2026</span>
-                </div>
-                <div class="subject-cloud">
-                    <span class="subject-tag">Mathematics (6)</span>
-                    <span class="subject-tag">Sciences (5)</span>
-                    <span class="subject-tag">Languages (4)</span>
-                    <span class="subject-tag">Humanities (3)</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: ATTENDANCE MONITOR ===== -->
-        <section id="attendanceSection" class="section">
-            <div class="recent-panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-calendar-check"></i> Live Attendance Monitor</h3>
-                    <span class="pill-badge">updated 1 min ago</span>
-                </div>
-                <div class="attendance-grid">
-                    <div class="attendance-row"><span>Grade 9C</span><span class="att-percent">96%</span></div>
-                    <div class="attendance-row"><span>Grade 10B</span><span class="att-percent">84%</span></div>
-                    <div class="attendance-row"><span>Grade 11A</span><span class="att-percent">91%</span></div>
-                    <div class="attendance-row"><span>Grade 12D</span><span class="att-percent">76%</span></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: REPORTS ===== -->
-        <section id="reportsSection" class="section">
-            <div class="recent-panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-chart-pie"></i> Recent Reports</h3>
-                    <span class="pill-badge">PDF / excel</span>
-                </div>
-                <div class="report-list">
-                    <div><i class="far fa-file-pdf" style="color:#d43f34;"></i> attendance_q1_2026.pdf</div>
-                    <div><i class="far fa-file-excel" style="color:#1f7b4d;"></i> student_performance_mar.xlsx</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== SECTION: SETTINGS ===== -->
-        <section id="settingsSection" class="section">
-            <div class="recent-panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-sliders-h"></i> System Settings</h3>
-                    <span class="pill-badge">admin</span>
-                </div>
-                <div class="settings-list">
-                    <div class="settings-option"><i class="fas fa-toggle-on"></i> two-factor authentication (on)</div>
-                    <div class="settings-option"><i class="fas fa-bell"></i> notification preferences</div>
-                </div>
-            </div>
-        </section>
-
-        <div class="dashboard-footer">
-            <i class="far fa-check-circle" style="color:#2563eb;"></i> Face Recognition Attendance System · v2.0
+        
         </div>
-    </main>
+    
+    
+        <!-- ================= STUDENTS SECTION ================= -->
+        <div class="student-section" id="studentsSection" style="display:none;">
 
-    <!-- ===== EXTERNAL JAVASCRIPT ===== -->
+            <div class="section-header">
+                <h2>Manage Students</h2>
+                <button id="addStudentBtn" class="btn-primary">+ Add Student</button>
+            </div>
+        <div>
+                <label>Search Students:</label>
+                <input type="text" id="studentSearch" placeholder="Search by name or regno">
+            </div>
+        
+            <!-- TABLE -->
+            <div class="table-container">
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Year</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody"></tbody>
+                </table>
+            </div>
+        
+            <!-- ADD STUDENT MODAL -->
+           <div class="modal" id="studentModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeStudentModal">&times;</span>
+        <h3 id="modalTitle">Add Student</h3>
+
+        <form id="studentForm" class="student-form">
+            <div class="form-grid">
+                <div>
+                    <label>Register Number</label>
+                    <input type="text" id="regno" required>
+                </div>
+
+                <div>
+                    <label>Full Name</label>
+                    <input type="text" id="fullname" required>
+                </div>
+
+                <div>
+                    <label>DOB</label>
+                    <input type="date" id="dob" required>
+                </div>
+
+                <div>
+                    <label>Department</label>
+                    <input type="text" id="department" required>
+                </div>
+
+                <div>
+                    <label>Course</label>
+                    <input type="text" id="course" required>
+                </div>
+
+                <div>
+                    <label>Year</label>
+                    <input type="text" id="year" required>
+                </div>
+
+                <div>
+                    <label>Password</label>
+                    <input type="password" id="password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary save-btn">Save Student</button>
+        </form>
+    </div>
+</div> </div>
+
+        </div>
+    
+    
+        <!-- ================= FACE RECOGNITION SECTION ================= -->
+        <div id="facerecSection" style="display:none;">
+            <h1>Live Face Recognition</h1>
+            <p>Camera screen here</p>
+        </div>
+    
+    </div>
+
+    <!-- ===================MANAGE SUBJECT======================= -->
+     <section id="subjectsSection" style="display:none;">
+
+        <h2>Manage Subjects</h2>
+
+        <button id="addSubjectBtn" class="btn-primary">Add Subject</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Year</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="subjectTableBody"></tbody>
+        </table>
+
+    </section>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+
 </body>
+
 </html>
+

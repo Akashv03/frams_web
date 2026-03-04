@@ -1,5 +1,4 @@
 from flask import Flask, render_template, jsonify, request, redirect
-from werkzeug.security import check_password_hash
 from flask import jsonify, session
 import cv2
 import numpy as np
@@ -23,6 +22,14 @@ def get_db():
         password="akash2003",    # your MySQL password
         database="face_rams"
     )
+
+db = get_db()
+cursor = db.cursor(dictionary=True)
+# Helper function
+def get_cursor(dictionary=True):
+    conn = get_db()
+    cur = conn.cursor(dictionary=dictionary)
+    return conn, cur
 
 
 #------LOGIN------
@@ -49,9 +56,10 @@ def admin_dashboard():
 
 @app.route("/attendance")
 def attendance():
-    if "admin" not in session:
+    if session.get("role") not in ["admin", "student"]:
         return redirect("/")
     return render_template("attendance.html")
+
 #------STUDENT DASHBOARD-----
 
 @app.route("/student-dashboard")
@@ -401,6 +409,234 @@ def recognize():
 
     return jsonify({"status": "not_matched"})
 
+
+# ------GET ALL STUDENT DETAILS------
+@app.route('/get_students', methods=['GET'])
+def get_students():
+    conn, cursor = get_cursor()
+    cursor.execute("SELECT * FROM student")
+    students = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(students)
+
+#-----ADD STUDENT-----
+@app.route('/add_student', methods=['POST'])
+def add_student():
+    try:
+        data = request.json
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1️⃣ Insert into student table
+        cursor.execute("""
+            INSERT INTO student (regno, fullname, dob, department, course, year)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            data['regno'],
+            data['fullname'],
+            data['dob'],
+            data['department'],
+            data['course'],
+            data['year']
+        ))
+
+        # 2️⃣ Insert into user table
+        cursor.execute("""
+            INSERT INTO user (username, password, role)
+            VALUES (%s, %s, %s)
+        """, (
+            data['regno'],
+            data['password'],
+            'student'
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"message": "Student added successfully"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+#------UPDATE STUDENT------
+@app.route('/update_student/<int:id>', methods=['PUT'])
+def update_student(id):
+    try:
+        data = request.json
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1️⃣ Get old regno (important if regno changed)
+        cursor.execute("SELECT regno FROM student WHERE id=%s", (id,))
+        old_data = cursor.fetchone()
+        old_regno = old_data['regno']
+
+        # 2️⃣ Update student table (NO PASSWORD HERE)
+        cursor.execute("""
+            UPDATE student
+            SET regno=%s, fullname=%s, dob=%s, department=%s, course=%s, year=%s
+            WHERE id=%s
+        """, (
+            data['regno'],
+            data['fullname'],
+            data['dob'],
+            data['department'],
+            data['course'],
+            data['year'],
+            id
+        ))
+
+        # 3️⃣ Update user table (username + password)
+        cursor.execute("""
+            UPDATE user
+            SET username=%s, password=%s
+            WHERE username=%s
+        """, (
+            data['regno'],
+            data['password'],
+            old_regno
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"message": "Student updated successfully"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+#------DELETE STUDENT------
+@app.route('/delete_student/<int:id>', methods=['DELETE'])
+def delete_student(id):
+    try:
+        conn = get_db()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1️⃣ Get regno
+        cursor.execute("SELECT regno FROM student WHERE id=%s", (id,))
+        data = cursor.fetchone()
+        regno = data['regno']
+
+        # 2️⃣ Delete from student
+        cursor.execute("DELETE FROM student WHERE id=%s", (id,))
+
+        # 3️⃣ Delete from user
+        cursor.execute("DELETE FROM user WHERE username=%s", (regno,))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({"message": "Student deleted successfully"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+#------GET STUDENT BY ID------
+@app.route('/get_student/<int:id>', methods=['GET'])
+def get_student(id):
+    conn, cursor = get_cursor()
+    cursor.execute("SELECT * FROM student WHERE id=%s", (id,))
+    student = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return jsonify(student)
+
+
+#----------SEARCH BAR---------
+@app.route('/advanced_search', methods=['GET'])
+def advanced_search():
+
+    regno = request.args.get('regno')
+    name = request.args.get('name')
+    department = request.args.get('department')
+    year = request.args.get('year')
+
+    conn, cursor = get_cursor()
+
+    query = "SELECT * FROM student WHERE 1=1"
+    values = []
+
+    if regno:
+        query += " AND regno LIKE %s"
+        values.append(f"%{regno}%")
+
+    if name:
+        query += " AND fullname LIKE %s"
+        values.append(f"%{name}%")
+
+    if department:
+        query += " AND department LIKE %s"
+        values.append(f"%{department}%")
+
+    if year:
+        query += " AND year LIKE %s"
+        values.append(f"%{year}%")
+
+    cursor.execute(query, values)
+    students = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(students)
+
+
+#===========MANAGE SUBJECT======================
+
+#--------ADD SUBJECT------
+@app.route("/add_subject", methods=["POST"])
+def add_subject():
+    data = request.json
+    conn, cursor = get_cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO subject (subject_name, subject_code, department, year)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            data["subject_name"],
+            data["subject_code"],
+            data["department"],
+            data["year"]
+        ))
+
+        conn.commit()
+        return jsonify({"message": "Subject added successfully!"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    finally:
+        cursor.close()
+        conn.close()
+
+#--------GET ALL SUBJECT------
+@app.route("/get_subjects", methods=["GET"])
+def get_subjects():
+    conn, cursor = get_cursor()
+    cursor.execute("SELECT * FROM subject")
+    subjects = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(subjects)
+
+#--------DELETE SUBJECT--------
+@app.route("/delete_subject/<int:id>", methods=["DELETE"])
+def delete_subject(id):
+    conn, cursor = get_cursor()
+
+    cursor.execute("DELETE FROM subject WHERE id=%s", (id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Subject deleted successfully!"})
 
 if __name__ == "__main__":
     app.run(debug=True)
