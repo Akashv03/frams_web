@@ -409,6 +409,10 @@ def recognize():
     return jsonify({"status": "not_matched"})
 
 
+# ----------------------------------------------
+# =============== MANAGE STUDENT ==============
+# ---------------------------------------------
+
 # ------GET ALL STUDENT DETAILS------
 @app.route('/get_students', methods=['GET'])
 def get_students():
@@ -584,147 +588,9 @@ def advanced_search():
 
     return jsonify(students)
 
-
-#========================================================
-#=============== MANAGE SUBJECT =========================
-#========================================================
-
-# -------- GET ALL SUBJECTS --------
-@app.route("/get_subjects", methods=["GET"])
-def get_subjects():
-    conn, cursor = get_cursor()
-
-    cursor.execute("SELECT * FROM subject")
-    subjects = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return jsonify(subjects)
-
-
-# -------- GET SINGLE SUBJECT --------
-@app.route("/get_subject/<int:id>", methods=["GET"])
-def get_subject(id):
-    try:
-        conn, cursor = get_cursor()
-
-        cursor.execute(
-            "SELECT id, subject_code, subject_name, department, year, semester FROM subject WHERE id=%s",
-            (id,)
-        )
-
-        subject = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
-
-        if not subject:
-            return jsonify({"error": "Subject not found"}), 404
-
-        return jsonify({
-            "id": subject["id"],
-            "subject_code": subject["subject_code"],
-            "subject_name": subject["subject_name"],
-            "department": subject["department"],
-            "year": subject["year"],
-            "semester": subject["semester"]
-        })
-
-    except Exception as e:
-        print("ERROR:", e)  # This will show error in terminal
-        return jsonify({"error": str(e)}), 500
-
-
-# -------- ADD SUBJECT --------
-@app.route("/add_subject", methods=["POST"])
-def add_subject():
-    try:
-        data = request.json
-
-        subject_code = data["subject_code"]
-        subject_name = data["subject_name"]
-        department = data["department"]
-        year = data["year"]
-        semester = data["semester"]
-
-        conn, cursor = get_cursor()
-
-        cursor.execute("""
-            INSERT INTO subject 
-            (subject_code, subject_name, department, year, semester)
-            VALUES (%s,%s,%s,%s,%s)
-        """, (subject_code, subject_name, department, year, semester))
-
-        conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        return jsonify({
-            "message": "Subject added successfully"
-        })
-
-    except Exception as e:
-        return jsonify({
-            "error": str(e)
-        })
-
-# ---------UPDATE SUBJECT--------
-@app.route("/update_subject/<int:id>", methods=["POST"])
-def update_subject(id):
-
-    data = request.json
-
-    code = data["code"]
-    name = data["name"]
-    dept = data["department"]
-    year = data["year"]
-    semester = data["semester"]
-
-    conn, cursor = get_cursor()
-
-    cursor.execute("""
-        UPDATE subject
-        SET subject_code=%s,
-            subject_name=%s,
-            department=%s,
-            year=%s,
-            semester=%s
-        WHERE id=%s
-    """,(code,name,dept,year,semester,id))
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return jsonify({
-        "message":"Subject updated successfully"
-    })
-
-
-# -------- DELETE SUBJECT --------
-@app.route("/delete_subject/<int:id>", methods=["DELETE"])
-def delete_subject(id):
-
-    conn, cursor = get_cursor()
-
-    cursor.execute("DELETE FROM subject WHERE id=%s", (id,))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    return jsonify({
-        "message": "Subject deleted successfully"
-    })
-
-
-
-
 #-------------------------------------
 #=========MANAGE STAFF==============
+# ------------------------------------
 
 #--------GET STAFF------
 @app.route('/get_staff', methods=['GET'])
@@ -828,80 +694,264 @@ def delete_staff(staff_id):
     return jsonify({"message":"Staff deleted successfully"})
 
 
+
+#========================================================
+#=============== MANAGE SUBJECT =========================
+#========================================================
+
+# -------- GET ALL SUBJECTS --------
+@app.route("/get_subjects", methods=["GET"])
+def get_subjects():
+    conn, cursor = get_cursor()
+
+    cursor.execute("SELECT * FROM subject")
+    subjects = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(subjects)
+
+
+# -------- GET SINGLE SUBJECT --------
+@app.route("/get_subject/<int:id>", methods=["GET"])
+def get_subject(id):
+    try:
+        conn, cursor = get_cursor()
+
+        cursor.execute(
+            "SELECT id, subject_code, subject_name, course, year, semester FROM subject WHERE id=%s",
+            (id,)
+        )
+
+        subject = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if not subject:
+            return jsonify({"error": "Subject not found"}), 404
+
+        return jsonify({
+            "id": subject["id"],
+            "subject_code": subject["subject_code"],
+            "subject_name": subject["subject_name"],
+            "course": subject["course"],
+            "year": subject["year"],
+            "semester": subject["semester"]
+        })
+
+    except Exception as e:
+        print("ERROR:", e)  # This will show error in terminal
+        return jsonify({"error": str(e)}), 500
+
+
+# -------- ADD SUBJECT --------
+@app.route("/add_subject", methods=["POST"])
+def add_subject():
+    try:
+        data = request.json
+
+        subject_code = data["subject_code"]
+        subject_name = data["subject_name"]
+        department = data["department"]
+        year = data["year"]
+        semester = data["semester"]
+
+        conn, cursor = get_cursor()
+
+        cursor.execute("""
+            INSERT INTO subject 
+            (subject_code, subject_name, department, year, semester)
+            VALUES (%s,%s,%s,%s,%s)
+        """, (subject_code, subject_name, department, year, semester))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "message": "Subject added successfully"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        })
+
+# ---------UPDATE SUBJECT--------
+@app.route("/update_subject/<int:id>", methods=["PUT"])
+def update_subject(id):
+
+    data = request.json
+
+    subject_code = data["subject_code"]
+    subject_name = data["subject_name"]
+    course = data["course"]
+    year = data["year"]
+    semester = data["semester"]
+
+    conn, cursor = get_cursor()
+
+    cursor.execute("""
+        UPDATE subject
+        SET subject_code=%s,
+            subject_name=%s,
+            course=%s,
+            year=%s,
+            semester=%s
+        WHERE id=%s
+    """,(subject_code,subject_name,course,year,semester,id))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "message":"Subject updated successfully"
+    })
+
+
+# -------- DELETE SUBJECT --------
+@app.route("/delete_subject/<int:id>", methods=["DELETE"])
+def delete_subject(id):
+
+    conn, cursor = get_cursor()
+
+    cursor.execute("DELETE FROM subject WHERE id=%s", (id,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "message": "Subject deleted successfully"
+    })
+
+
+
 #===================================================================
 #------------------TIME TABLE-------------------------------
 #===================================================================
 
+@app.route("/get_timetable", methods=["GET"])
+def get_timetable():
 
-# #--------ADD TIMETABLE-------
-# @app.route('/add_timetable', methods=['POST'])
-# def add_timetable():
+    department = request.args.get("department")
+    course = request.args.get("course")
+    year = request.args.get("year")
+    semester = request.args.get("semester")
+    shift = request.args.get("shift")
 
-#     data = request.json
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
 
-#     department = data['department']
-#     semester = data['semester']
-#     shift = data['shift']
-#     day = data['day']
-#     period = data['period']
-#     subject_code = data['subject_code']
-#     subject = data['subject']
-#     staff_id = data['staff_id']
+    query = """
+        SELECT * FROM timetable
+        WHERE department=%s AND course=%s AND year=%s
+        AND semester=%s AND shift_type=%s
+    """
 
-#     conn = get_db()
-#     cursor = conn.cursor()
+    cursor.execute(query, (department, course, year, semester, shift))
+    data = cursor.fetchall()
 
-#     cursor.execute("""
-#         INSERT INTO timetable
-#         (department, semester, shift_type, day, period, subject_code, subject, staff_id)
-#         VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-#     """, (department, semester, shift, day, period, subject_code, subject, staff_id))
+    cursor.close()
+    conn.close()
 
-#     conn.commit()
+    return jsonify(data)
 
-#     return jsonify({"message": "Timetable added successfully"})
+@app.route("/add_timetable", methods=["POST"])
+def add_timetable():
+    data = request.json
+    dept = data["department"]
+    course = data["course"]
+    year = data["year"]
+    sem = data["semester"]
+    shift = data["shift"]
+    day_order = data["day_order"]
+    period = data["period"]
+    subject_code = data["subject_code"]
+    staff_id = data["staff_id"]
 
-#--------GET TIMETABEL IN FORNTEND--------
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
 
-# @app.route('/get_timetable')
-# def get_timetable():
+    # Check Staff
+    cursor.execute("SELECT * FROM staff WHERE staff_id=%s", (staff_id,))
+    staff = cursor.fetchone()
+    if not staff:
+        return jsonify({"success": False, "message": "Staff Not Registered"})
 
-#     department = request.args.get("department")
-#     shift = request.args.get("shift")
+    # Check Subject
+    cursor.execute("SELECT * FROM subject WHERE subject_code=%s", (subject_code,))
+    subject = cursor.fetchone()
+    if not subject:
+        return jsonify({"success": False, "message": "Subject Not Registered"})
 
-#     conn, cursor = get_cursor()
+    # Check Staff Max 3 periods per day
+    cursor.execute("""
+        SELECT COUNT(*) as total FROM timetable 
+        WHERE staff_id=%s AND day_order=%s AND semester=%s AND shift_type=%s
+    """, (staff_id, day_order, sem, shift))
+    total = cursor.fetchone()["total"]
+    if total >= 3:
+        return jsonify({"success": False, "message": "Staff already has 3 periods today"})
 
-#     cursor.execute("""
-#     SELECT t.day,t.period,s.subject_name,t.staff_id
-#     FROM timetable t
-#     JOIN subject s ON t.subject_code = s.subject_code
-#     WHERE t.department=%s AND t.shift_type=%s
-#     """,(department,shift))
+    # Check if slot exists (for same department, course, year, semester, shift, day, period)
+    cursor.execute("""
+        SELECT * FROM timetable 
+        WHERE department=%s AND course=%s AND year=%s AND semester=%s AND shift_type=%s AND day_order=%s AND period=%s
+    """, (dept, course, year, sem, shift, day_order, period))
+    slot = cursor.fetchone()
 
-#     rows = cursor.fetchall()
+    if slot:
+        # Update existing slot
+        cursor.execute("""
+            UPDATE timetable 
+            SET subject_code=%s, staff_id=%s, subject=%s
+            WHERE id=%s
+        """, (subject_code, staff_id, subject["subject_name"], slot["id"]))
+        conn.commit()
+        return jsonify({"success": True, "message": "Timetable Slot Updated", "slot": {
+            "id": slot["id"], "department": dept, "course": course, "year": year, "semester": sem,
+            "shift": shift, "day_order": day_order, "period": period, "subject_code": subject_code, "staff_id": staff_id
+        }})
 
-#     cursor.close()
-#     conn.close()
+    else:
+        # Insert new slot
+        cursor.execute("""
+            INSERT INTO timetable (department, course, year, semester, shift_type, day_order, period, subject_code, staff_id, subject)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (dept, course, year, sem, shift, day_order, period, subject_code, staff_id, subject["subject_name"]))
+        conn.commit()
+        slot_id = cursor.lastrowid
+        return jsonify({"success": True, "message": "Timetable Added", "slot": {
+            "id": slot_id, "department": dept, "course": course, "year": year, "semester": sem,
+            "shift": shift, "day_order": day_order, "period": period, "subject_code": subject_code, "staff_id": staff_id
+        }})
 
-#     return jsonify(rows)
 
-# @app.route("/get_staff_by_department/<dept>")
-# def get_staff_by_department(dept):
+@app.route("/delete_timetable", methods=["POST"])
+def delete_timetable():
+    data = request.json
+    dept = data["department"]
+    course = data["course"]
+    year = data["year"]
+    sem = data["semester"]
+    shift = data["shift"]
+    day_order = data["day_order"]
+    period = data["period"]
 
-#     conn, cursor = get_cursor()
-
-#     cursor.execute(
-#         "SELECT staff_id, staff_name FROM staff WHERE department=%s",
-#         (dept,)
-#     )
-
-#     staff = cursor.fetchall()
-
-#     cursor.close()
-#     conn.close()
-
-#     return jsonify(staff)
-
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM timetable
+        WHERE department=%s AND course=%s AND year=%s AND semester=%s AND shift_type=%s AND day_order=%s AND period=%s
+    """, (dept, course, year, sem, shift, day_order, period))
+    conn.commit()
+    return jsonify({"success": True, "message": "Timetable Slot Deleted"})
 
 if __name__ == "__main__":
     app.run(debug=True)

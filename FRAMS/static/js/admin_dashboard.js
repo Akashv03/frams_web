@@ -4,6 +4,7 @@
 
 let editingStudentId = null;
 
+
 // ===== LOAD STUDENTS =====
 async function loadStudents() {
     try {
@@ -111,7 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const subjectsSection = document.getElementById("subjectsSection");
     const facerecSection = document.getElementById("facerecSection");
     const staffSection = document.getElementById("staffSection");
-    // const timetableSection = document.getElementById("timetableSection");
+    const timetablesection = document.getElementById("timetablesection");
+
+
 
     navItems.forEach(item => {
         item.addEventListener("click", function () {
@@ -127,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
             subjectsSection.style.display = "none";
             facerecSection.style.display = "none";
             staffSection.style.display = "none";
-            // timetableSection.style.display = "none";
+            timetablesection.style.display = "none";
 
             // Show selected
             if (section === "dashboard") {
@@ -153,10 +156,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 loadStaff();
             }
 
-            // if (section == "timetable") {
-            //     timetableSection.style.display = "block";
-            //     loadTimetable();
-            // }
+            if (section === "timetable") {
+                timetablesection.style.display = "block";
+            }
 
         });
     });
@@ -395,6 +397,66 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
+
+    // ===== TIMETABLE BUTTON =====
+    const btnLoadTimetable = document.getElementById('btnLoadTimetable');
+    if (btnLoadTimetable) {
+        btnLoadTimetable.addEventListener('click', loadTimetable);
+    }
+
+
+
+
+
+
+
+    const closeTimetableModal = document.getElementById('closeTimetableModal');
+    if (closeTimetableModal) {
+        closeTimetableModal.onclick = () => {
+            document.getElementById('timetableModal').style.display = 'none';
+        }
+    }
+
+    const timetableForm = document.getElementById('timetableForm');
+    if (timetableForm) {
+        timetableForm.onsubmit = function (e) {
+            e.preventDefault();
+            const dep = document.getElementById('ttdepartment').value;
+            const course = document.getElementById('ttcourse').value;
+            const year = document.getElementById('ttyear').value;
+            const sem = document.getElementById('ttsemester').value;
+            const shift = document.getElementById('ttshift').value;
+            const day = document.getElementById('ttDay').value;
+            const period = document.getElementById('ttPeriod').value;
+            const subject_code = document.getElementById('ttSubject').value;
+            const staff_id = document.getElementById('ttStaff').value;
+
+            fetch('/add_timetable', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    department: dep,
+                    course: course,
+                    year: year,
+                    semester: sem,
+                    shift: shift,
+                    day_order: day,
+                    period: period,
+                    subject_code: subject_code,
+                    staff_id: staff_id
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert('Timetable updated!');
+                    document.getElementById('timetableModal').style.display = 'none';
+                    loadTimetable(); // refresh grid
+                });
+        };
+    }
+
+
+
 });
 // -------------------------------------------------------------
 // ================== MANAGE SUBJECT ==========================
@@ -453,7 +515,18 @@ async function editSubject(id) {
     try {
 
         const response = await fetch(`/get_subject/${id}`);
+
+        if (!response.ok) {
+            alert("Failed to load subject");
+            return;
+        }
+
         const subject = await response.json();
+
+        if (!subject) {
+            alert("Subject not found");
+            return;
+        }
 
         document.getElementById("subjectCode").value = subject.subject_code;
         document.getElementById("subjectName").value = subject.subject_name;
@@ -724,194 +797,87 @@ async function deleteStaff(id) {
 // // ================== TIME TABLE  ==========================
 // // -------------------------------------------------------------
 
-// // ================= LOAD TIMETABLE =================
-// async function loadTimetable() {
-
-//     const department = document.getElementById("ttdepartment").value;
-//     const shift = document.getElementById("ttshift").value;
-
-//     if (!department) return;
-
-//     const res = await fetch(`/get_timetable?department=${department}&shift=${shift}`);
-//     const data = await res.json();
-
-//     const tbody = document.getElementById("timetableBody");
-//     tbody.innerHTML = "";
-
-//     const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-
-//     days.forEach(day => {
-
-//         let row = `<tr><td>${day}</td>`;
-
-//         for (let i = 1; i <= 5; i++) {
-
-//             const cell = data.find(d => d.day === day && d.period == i);
-
-//             if (cell) {
-
-//                 row += `
-//                 <td>
-//                 ${cell.subject_code}<br>
-//                 ${cell.subject}
-//                 <small>${cell.staff_id}</small>
-//                 </td>
-//                 `;
-
-//             }
-
-//             else {
-
-//                 row += `<td>-</td>`;
-
-//             }
-
-//         }
-
-//         row += "</tr>";
-
-//         tbody.innerHTML += row;
-
-//     });
-
-// }
-
-// // ================= SAVE TIMETABLE =================
-
-// async function saveTimetable() {
-
-//     const department = document.getElementById("ttdepartment").value;
-//     const semester = document.getElementById("semester").value;
-//     const day = document.getElementById("day").value;
-//     const period = document.getElementById("period").value;
-
-//     const subject_code = document.getElementById("subject_code").value;
-//     const subject_name = document.getElementById("subject_name").value;
-//     const staff_id = document.getElementById("staff_id").value;
-
-//     const res = await fetch("/add_timetable", {
-
-//         method: "POST",
-
-//         headers: {
-//             "Content-Type": "application/json"
-//         },
-
-//         body: JSON.stringify({
-
-//             department: department,
-//             semester: semester,
-//             shift: "Morning",
-//             day: day,
-//             period: period,
-//             subject_code: subject_code,
-//             subject: subject_name,
-//             staff_id: staff_id
-
-//         })
-
-//     });
-
-//     const data = await res.json();
-
-//     alert(data.message);
-
-//     loadTimetable();
-
-//     closeModal();
-
-// }
-
-// function openAddModal() {
-
-//     document.getElementById("addModal").style.display = "block";
-
-//     loadStaffDropdown();
-
-// }
-
-// function closeModal() {
-//     document.getElementById("addModal").style.display = "none";
-// }
-
-// async function loadStaffDropdown() {
-
-//     const dept = document.getElementById("ttdepartment").value;
-
-//     if (!dept) {
-//         alert("Select department first");
-//         return;
-//     }
-
-//     const res = await fetch(`/get_staff_by_department/${dept}`);
-//     const staff = await res.json();
-
-//     const staffSelect = document.getElementById("staff_id");
-
-//     staffSelect.innerHTML = "";
-
-//     staff.forEach(s => {
-
-//         const option = document.createElement("option");
-
-//         option.value = s.staff_id;
-
-//         option.textContent = `${s.staff_id} - ${s.staff_name}`;
-
-//         staffSelect.appendChild(option);
-
-//     });
-
-// }
-
-// async function loadSubjectsDropdown() {
-
-//     const res = await fetch("/get_subjects");
-//     const subjects = await res.json();
-
-//     const subjectSelect = document.getElementById("subject");
-
-//     subjectSelect.innerHTML = "";
-
-//     subjects.forEach(sub => {
-
-//         const option = document.createElement("option");
-
-//         option.value = sub.subject_code;
-
-//         option.textContent = `${sub.subject_code} - ${sub.subject_name}`;
-
-//         subjectSelect.appendChild(option);
-
-//     });
-
-// }
-
-// async function checkStaff() {
-
-//     const staff_id = document.getElementById("staff_id").value;
-
-//     if (!staff_id) return;
-
-//     const res = await fetch(`/get_staff/${staff_id}`);
-
-//     if (res.status === 200) {
-
-//         const staff = await res.json();
-
-//         if (staff) {
-
-//             document.getElementById("staffStatus").innerHTML =
-//                 "✔ Staff: " + staff.staff_name;
-
-//         }
-//         else {
-
-//             document.getElementById("staffStatus").innerHTML =
-//                 "❌ Staff Not Available";
-
-//         }
-
-//     }
-
-// }   
+function loadTimetable() {
+    const dep = document.getElementById('ttdepartment').value;
+    const course = document.getElementById('ttcourse').value;
+    const year = document.getElementById('ttyear').value;
+    const sem = document.getElementById('ttsemester').value;
+    const shift = document.getElementById('ttshift').value;
+
+    if (!dep || !course || !year || !sem || !shift) {
+        alert('Please select all filters!');
+        return;
+    }
+
+    fetch(`/get_timetable?department=${dep}&course=${course}&year=${year}&semester=${sem}&shift=${shift}`)
+        .then(res => res.json())
+        .then(data => {
+            renderTimetableGrid(data);
+            document.getElementById('timetableGrid').style.display = 'table';
+        })
+        .catch(err => console.error(err));
+}
+
+function renderTimetableGrid(timetable) {
+
+    const tbody = document.getElementById('timetableBody');
+    tbody.innerHTML = '';
+
+    const dayOrders = [1, 2, 3, 4, 5, 6];
+
+    for (let day of dayOrders) {
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>Day ${day}</td>`;
+
+        for (let p = 1; p <= 5; p++) {
+
+            const slot = timetable.find(t => t.day_order == day && t.period == p);
+
+            const td = document.createElement('td');
+
+            td.textContent = slot
+                ? `${slot.subject_code} (${slot.staff_id})`
+                : '---';
+
+            td.onclick = () => openSlotModal(day, p, slot);
+
+            tr.appendChild(td);
+        }
+
+        tbody.appendChild(tr);
+    }
+}
+
+function openSlotModal(day, period, slot = null) {
+    document.getElementById('ttDay').value = day;
+    document.getElementById('ttPeriod').value = period;
+
+    // Populate subjects
+    fetch(`/get_subjects`).then(r => r.json()).then(data => {
+        const subjSelect = document.getElementById('ttSubject');
+        subjSelect.innerHTML = '';
+        data.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.subject_code;
+            opt.text = s.subject_name;
+            subjSelect.add(opt);
+        });
+        if (slot) subjSelect.value = slot.subject_code;
+    });
+
+    // Populate staff
+    fetch(`/get_staff`).then(r => r.json()).then(data => {
+        const staffSelect = document.getElementById('ttStaff');
+        staffSelect.innerHTML = '';
+        data.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.staff_id;
+            opt.text = s.staff_name;
+            staffSelect.add(opt);
+        });
+        if (slot) staffSelect.value = slot.staff_id;
+    });
+
+    document.getElementById('timetableModal').style.display = 'block';
+}

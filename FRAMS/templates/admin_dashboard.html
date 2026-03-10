@@ -108,7 +108,7 @@
 
 
 
-    <!-- Main Content -->
+    <!-------------------- Main Content -------------------->
     <div class="main-content">
 
         <!-- ================= DASHBOARD SECTION ================= -->
@@ -145,8 +145,9 @@
 
         </div>
 
-
-        <!-- ================= STUDENTS SECTION ================= -->
+        <!-- ------------------------------------------------------------------------------- -->
+        <!-- ============================ STUDENTS SECTION =============================== -->
+        <!-- --------------------------------------------------------------------------------- -->
         <div class="student-section" id="studentsSection" style="display:none;">
 
             <div class="section-header">
@@ -174,7 +175,7 @@
                 </table>
             </div>
 
-            <!-- ADD STUDENT MODAL -->
+            <!-------------------- ADD STUDENT MODAL -------------------->
             <div class="modal" id="studentModal">
                 <div class="modal-content">
                     <span class="close-modal" id="closeStudentModal">&times;</span>
@@ -224,15 +225,18 @@
             </div>
         </div>
 
-        <!-- ================= FACE RECOGNITION SECTION ================= -->
+        <!---------------------------------------------------------------------------------------->
+        <!-- ============================ FACE RECOGNITION SECTION ============================ -->
+        <!--------------------------------------------------------------------------------------->
         <div id="facerecSection" style="display:none;">
             <h1>Live Face Recognition</h1>
             <p>Camera screen here</p>
         </div>
 
 
-
-        <!-- =================== MANAGE SUBJECT ======================= -->
+        <!------------------------------------------------------------------------------------------->
+        <!-- =============================== MANAGE SUBJECT ======================================= -->
+        <!-------------------------------------------------------------------------------------->
         <section id="subjectsSection" class="section" style="display: none;">
 
             <div class="section-header">
@@ -261,7 +265,7 @@
         </section>
 
 
-        <!-- =================== ADD SUBJECT MODAL ======================= -->
+        <!-- --------------------- ADD SUBJECT MODAL ------------------------ -->
         <div id="subjectModal" class="modal" style="display:none;">
             <div class="modal-content">
 
@@ -281,7 +285,7 @@
 
                     <div class="form-group">
                         <label>Course</label>
-                        <input type="text" id="subjectDept" required>
+                        <input type="text" id="subjectcourse" required>
                     </div>
 
                     <div class="form-group">
@@ -321,8 +325,9 @@
             </div>
         </div>
 
-
-        <!-- =================== MANAGE STAFF =================== -->
+        <!---------------------------------------------------------------------------------->
+        <!-- =============================== MANAGE STAFF ============================== -->
+        <!-- --------------------------------------------------------------------------- -->
         <section id="staffSection" style="display:none;">
 
             <div class="section-header">
@@ -351,7 +356,7 @@
         </section>
 
 
-        <!-- STAFF MODAL -->
+        <!--------------- STAFF MODAL ------------------>
         <div id="staffModal" class="popup">
 
             <div class="popup-content">
@@ -379,104 +384,100 @@
 
         </div>
 
-
+        <!-- ----------------------------------------------------------------- -->
         <!-- =================== TIMETABLE MODULE ======================= -->
+        <!-- ---------------------------------------------------------------- -->
 
-        <!-- <div id="timetableSection" class="timetable-section" style="display:none;">
+        <section id="timetablesection" class="section">
 
-            <h2>Timetable</h2>
+            <h2>Manage Timetable</h2>
 
-            <select id="ttdepartment">
-                <option value="">Select Department</option>
-                <option value="MCA">MCA</option>
-                <option value="MBA">MBA</option>
-                <option value="CSE">CSE</option>
-            </select>
-
-            <select id="ttshift">
-                <option value="Morning">Morning</option>
-                <option value="Evening">Evening</option>
-            </select>
-
-            <button onclick="loadTimetable()">Load</button>
-
-            <button onclick="openAddModal()">Add Period</button>
-
-            <table class="timetable-table">
-
-                <thead>
-                    <tr>
-                        <th>Day</th>
-                        <th>8-9</th>
-                        <th>9-10</th>
-                        <th>10-11</th>
-                        <th>11-12</th>
-                        <th>12-1</th>
-                    </tr>
-                </thead>
-
-                <tbody id="timetableBody"></tbody>
-
-            </table>
-
-        </div> -->
-
-        <!-- =================== ADD PERIOD MODAL ======================= -->
-
-        <!-- <div id="addModal" class="modal">
-            <div class="modal-content">
-
-                <h3>Add Timetable</h3>
-
-                <label>Department</label>
-                <select id="department">
+            <!-- Top Search Bar -->
+            <div class="filters" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+                <select id="ttdepartment">
+                    <option value="">Select Department</option>
                     <option value="MCA">MCA</option>
-                    <option value="MBA">MBA</option>
-                    <option value="CSE">CSE</option>
+                    <option value="BSC">Bsc</option>
+                    <option value="MSC">Msc</option>
                 </select>
 
-                <label>Semester</label>
-                <select id="semester">
+                <select id="ttcourse">
+                    <option value="">Select Course</option>
+                    <option value="CS">Computer Science</option>
+                    <option value="CA">Computer Application</option>
+                </select>
+
+                <select id="ttyear">
+                    <option value="">Select Year</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
-                    <option value="4">4</option>
                 </select>
 
-                <label>Day</label>
-                <select id="day">
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                </select>
-
-                <label>Period</label>
-                <select id="period">
+                <select id="ttsemester">
+                    <option value="">Select Semester</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>
                     <option value="5">5</option>
+                    <option value="6">6</option>
                 </select>
 
-                <label>Subject Code</label>
-                <input type="text" id="subject_code">
+                <select id="ttshift">
+                    <option value="">Select Shift</option>
+                    <option value="Morning">Morning</option>
+                    <option value="Evening">Evening</option>
+                </select>
 
-                <label>Subject Name</label>
-                <input type="text" id="subject_name">
-
-                <label>Staff ID</label>
-                <input type="text" id="staff_id" onblur="checkStaff()">
-
-                <p id="staffStatus"></p>
-
-                <button onclick="saveTimetable()">Save</button>
-                <button onclick="closeModal()">Close</button>
-
+                <button id="btnLoadTimetable" class="btn-primary">Load Timetable</button>
             </div>
-        </div> -->
+
+            <!-- Timetable Grid (visible after search) -->
+            <table id="timetableGrid" style="width:100%; border-collapse:collapse; display:none;">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>1</th>
+                        <th>2</th>
+                        <th>3</th>
+                        <th>4</th>
+                        <th>5</th>
+                    </tr>
+                </thead>
+                <tbody id="timetableBody"></tbody>
+            </table>
+
+            <!-- Timetable Modal -->
+            <div id="timetableModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close-modal" id="closeTimetableModal">&times;</span>
+                    <h3 id="timetableModalTitle">Edit Timetable Slot</h3>
+
+                    <form id="timetableForm">
+                        <input type="hidden" id="ttDay">
+                        <input type="hidden" id="ttPeriod">
+
+                        <div class="form-group">
+                            <label for="ttSubject">Subject</label>
+                            <select id="ttSubject" required></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ttStaff">Staff</label>
+                            <select id="ttStaff" required></select>
+                        </div>
+
+                        <div class="modal-actions" style="display:flex; gap:10px; margin-top:15px;">
+                            <button type="submit" class="btn-primary save-btn">Save</button>
+                            <button type="button" id="deleteTimetableSlot" class="btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+
     </div>
 
 
