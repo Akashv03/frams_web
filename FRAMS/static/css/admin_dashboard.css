@@ -287,3 +287,362 @@ h1 {
 .save-btn {
     width: 100%;
 }
+
+/* ===== SECTION COMMON STYLE ===== */
+.section {
+    padding: 30px;
+}
+
+/* ===== HEADER ALIGNMENT ===== */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* ===== TABLE WRAPPER ===== */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* ===== TABLE STYLE ===== */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ===== BUTTON STYLE ===== */
+.btn-primary {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+/* ================= STAFF SECTION ================= */
+
+#staffSection{
+    padding: 20px;
+}
+
+#staffSection h2{
+    margin-bottom: 15px;
+}
+
+/* Add Staff Button */
+#addStaffBtn{
+    margin-bottom: 15px;
+}
+
+/* STAFF TABLE */
+
+#staffSection table{
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+#staffSection th{
+    background: #2f80ed;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+#staffSection td{
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+#staffSection tr:hover{
+    background: #f5f7ff;
+}
+
+/* ACTION BUTTONS */
+
+.btn-danger{
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-danger:hover{
+    background: #c0392b;
+}
+
+.btn-primary{
+    background: #2f80ed;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary:hover{
+    background: #1c5ed6;
+}
+
+/* ================= POPUP BACKGROUND ================= */
+
+.popup{
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* ================= POPUP BOX ================= */
+
+.popup-content{
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+
+/* ================= TITLE ================= */
+
+.popup-content h2{
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+/* ================= INPUT BOX ================= */
+
+.popup-content input{
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+
+/* ================= BUTTONS ================= */
+
+.save-btn{
+    background: #4318ff;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.save-btn:hover{
+    background: #3212cc;
+}
+
+
+.cancel-btn{
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover{
+    background: #c0392b;
+}
+
+
+/* ================= TIMETABLE TABLE ================= */
+
+.timetable-container{
+    margin-top:20px;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.timetable-table{
+    width:100%;
+    border-collapse:collapse;
+    text-align:center;
+    font-size:14px;
+}
+
+.timetable-table th{
+    background:#4318ff;
+    color:white;
+    padding:12px;
+    font-weight:600;
+}
+
+.timetable-table td{
+    border:1px solid #e5e5e5;
+    padding:14px;
+    height:70px;
+    vertical-align:middle;
+}
+
+.timetable-table tr:nth-child(even){
+    background:#f8f9ff;
+}
+
+.timetable-table td small{
+    display:block;
+    color:#555;
+    font-size:12px;
+}
+
+/* ===== TIMETABLE CONTROLS ===== */
+
+.timetable-controls{
+    display:flex;
+    gap:15px;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.timetable-controls select{
+    padding:8px 10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.timetable-controls button{
+    background:#4318ff;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:500;
+}
+
+.timetable-controls button:hover{
+    background:#3210cc;
+}
+
+/* ADD TIMETABLE BUTTON */
+
+.add-timetable-btn{
+    background:#28a745;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    margin-left:auto;
+}
+
+.add-timetable-btn:hover{
+    background:#1f8a38;
+}
+
+/* ================= MODAL ================= */
+
+.modal{
+    display:none;
+    position:fixed;
+    z-index:1000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    width:380px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+.modal-content h3{
+    margin-bottom:15px;
+    color:#333;
+}
+
+.modal-content label{
+    display:block;
+    margin-top:10px;
+    font-size:13px;
+    font-weight:500;
+}
+
+.modal-content input,
+.modal-content select{
+    width:100%;
+    padding:8px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.modal-buttons{
+    margin-top:18px;
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.modal-buttons button{
+    padding:8px 14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.save-btn{
+    background:#4318ff;
+    color:white;
+}
+
+.close-btn{
+    background:#ccc;
+}
+
+#staffStatus{
+    margin-top:6px;
+    font-size:13px;
+    font-weight:500;
+}

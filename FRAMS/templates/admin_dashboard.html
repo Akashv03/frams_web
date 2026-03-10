@@ -50,9 +50,21 @@
 
             </div>
 
+            <div class="nav-item" data-section="staff">
+
+                <i class="fas fa-user"></i><span>Manage Staff</span>
+
+            </div>
+
             <div class="nav-item" data-section="subjects">
 
                 <i class="fas fa-book"></i><span>Manage Subjects</span>
+
+            </div>
+
+            <div class="nav-item" data-section="timetable">
+
+                <i class="fas fa-clock"></i><span>Time Table</span>
 
             </div>
 
@@ -98,42 +110,42 @@
 
     <!-- Main Content -->
     <div class="main-content">
-    
+
         <!-- ================= DASHBOARD SECTION ================= -->
         <div id="dashboardSection">
-        
+
             <h1>Dashboard</h1>
-        
+
             <div class="stats-cards">
                 <div class="card">
                     <h3>Total Students</h3>
                     <p id="totalStudents">120</p>
                 </div>
-            
+
                 <div class="card">
                     <h3>Present Today</h3>
                     <p id="presentToday">95</p>
                 </div>
-            
+
                 <div class="card">
                     <h3>Absent Today</h3>
                     <p id="absentToday">25</p>
                 </div>
-            
+
                 <div class="card">
                     <h3>Attendance %</h3>
                     <p id="attendancePercent">79%</p>
                 </div>
             </div>
-        
+
             <div class="chart-container">
                 <h3>Attendance Graph</h3>
                 <canvas id="attendanceChart" height="150"></canvas>
             </div>
-        
+
         </div>
-    
-    
+
+
         <!-- ================= STUDENTS SECTION ================= -->
         <div class="student-section" id="studentsSection" style="display:none;">
 
@@ -141,11 +153,11 @@
                 <h2>Manage Students</h2>
                 <button id="addStudentBtn" class="btn-primary">+ Add Student</button>
             </div>
-        <div>
+            <div>
                 <label>Search Students:</label>
                 <input type="text" id="studentSearch" placeholder="Search by name or regno">
             </div>
-        
+
             <!-- TABLE -->
             <div class="table-container">
                 <table class="student-table">
@@ -161,88 +173,313 @@
                     <tbody id="studentTableBody"></tbody>
                 </table>
             </div>
-        
+
             <!-- ADD STUDENT MODAL -->
-           <div class="modal" id="studentModal">
-    <div class="modal-content">
-        <span class="close-modal" id="closeStudentModal">&times;</span>
-        <h3 id="modalTitle">Add Student</h3>
+            <div class="modal" id="studentModal">
+                <div class="modal-content">
+                    <span class="close-modal" id="closeStudentModal">&times;</span>
+                    <h3 id="modalTitle">Add Student</h3>
 
-        <form id="studentForm" class="student-form">
-            <div class="form-grid">
-                <div>
-                    <label>Register Number</label>
-                    <input type="text" id="regno" required>
-                </div>
+                    <form id="studentForm" class="student-form">
+                        <div class="form-grid">
+                            <div>
+                                <label>Register Number</label>
+                                <input type="text" id="regno" required>
+                            </div>
 
-                <div>
-                    <label>Full Name</label>
-                    <input type="text" id="fullname" required>
-                </div>
+                            <div>
+                                <label>Full Name</label>
+                                <input type="text" id="fullname" required>
+                            </div>
 
-                <div>
-                    <label>DOB</label>
-                    <input type="date" id="dob" required>
-                </div>
+                            <div>
+                                <label>DOB</label>
+                                <input type="date" id="dob" required>
+                            </div>
 
-                <div>
-                    <label>Department</label>
-                    <input type="text" id="department" required>
-                </div>
+                            <div>
+                                <label>Department</label>
+                                <input type="text" id="department" required>
+                            </div>
 
-                <div>
-                    <label>Course</label>
-                    <input type="text" id="course" required>
-                </div>
+                            <div>
+                                <label>Course</label>
+                                <input type="text" id="course" required>
+                            </div>
 
-                <div>
-                    <label>Year</label>
-                    <input type="text" id="year" required>
-                </div>
+                            <div>
+                                <label>Year</label>
+                                <input type="text" id="year" required>
+                            </div>
 
-                <div>
-                    <label>Password</label>
-                    <input type="password" id="password">
+                            <div>
+                                <label>Password</label>
+                                <input type="password" id="password">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary save-btn">Save Student</button>
+                    </form>
                 </div>
             </div>
-
-            <button type="submit" class="btn-primary save-btn">Save Student</button>
-        </form>
-    </div>
-</div> </div>
-
         </div>
-    
-    
+
         <!-- ================= FACE RECOGNITION SECTION ================= -->
         <div id="facerecSection" style="display:none;">
             <h1>Live Face Recognition</h1>
             <p>Camera screen here</p>
         </div>
-    
+
+
+
+        <!-- =================== MANAGE SUBJECT ======================= -->
+        <section id="subjectsSection" class="section" style="display: none;">
+
+            <div class="section-header">
+                <h2>Manage Subjects</h2>
+                <button id="addSubjectBtn" class="btn-primary">+Add Subject</button>
+            </div>
+
+            <div class="table-container">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Course</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectTableBody">
+                        <!-- Subject rows will load here -->
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- =================== ADD SUBJECT MODAL ======================= -->
+        <div id="subjectModal" class="modal" style="display:none;">
+            <div class="modal-content">
+
+                <h3 id="subjectModalTitle">Add Subject</h3>
+
+                <form id="subjectForm">
+
+                    <div class="form-group">
+                        <label>Subject Code</label>
+                        <input type="text" id="subjectCode" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subject Name</label>
+                        <input type="text" id="subjectName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Course</label>
+                        <input type="text" id="subjectDept" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Year</label>
+                        <select id="subjectYear" required>
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Semester</label>
+                        <select id="subjectsemester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                        </select>
+
+                    </div>
+                    <button type="submit" class="subject-save-btn">
+                        Save Subject
+                    </button>
+
+                    <div class="modal-actions">
+                        <!-- <button type="submit" class="btn-primary">Save</button> -->
+                        <button type="button" id="closeSubjectModal" class="btn-secondary">Cancel</button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+
+        <!-- =================== MANAGE STAFF =================== -->
+        <section id="staffSection" style="display:none;">
+
+            <div class="section-header">
+                <h2>Manage Staff</h2>
+                <button id="addStaffBtn" class="btn-primary">+ Add Staff</button>
+            </div>
+
+            <div class="table-container">
+                <table class="styled-table">
+
+                    <thead>
+                        <tr>
+                            <th>Staff ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="staffTableBody"></tbody>
+
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- STAFF MODAL -->
+        <div id="staffModal" class="popup">
+
+            <div class="popup-content">
+
+                <span id="closeStaffModal">&times;</span>
+
+                <h2>Add Staff</h2>
+
+                <form id="staffForm">
+                    <input type="text" id="staffId" placeholder="Staff ID" required>
+
+                    <input type="text" id="staffName" placeholder="Staff Name" required>
+
+                    <input type="text" id="staffDept" placeholder="Department" required>
+
+                    <input type="email" id="staffEmail" placeholder="Email" required>
+
+                    <button type="submit" class="save-btn">Save</button>
+
+                    <button type="button" id="cancelStaffBtn" class="cancel-btn">Cancel</button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================== TIMETABLE MODULE ======================= -->
+
+        <!-- <div id="timetableSection" class="timetable-section" style="display:none;">
+
+            <h2>Timetable</h2>
+
+            <select id="ttdepartment">
+                <option value="">Select Department</option>
+                <option value="MCA">MCA</option>
+                <option value="MBA">MBA</option>
+                <option value="CSE">CSE</option>
+            </select>
+
+            <select id="ttshift">
+                <option value="Morning">Morning</option>
+                <option value="Evening">Evening</option>
+            </select>
+
+            <button onclick="loadTimetable()">Load</button>
+
+            <button onclick="openAddModal()">Add Period</button>
+
+            <table class="timetable-table">
+
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>8-9</th>
+                        <th>9-10</th>
+                        <th>10-11</th>
+                        <th>11-12</th>
+                        <th>12-1</th>
+                    </tr>
+                </thead>
+
+                <tbody id="timetableBody"></tbody>
+
+            </table>
+
+        </div> -->
+
+        <!-- =================== ADD PERIOD MODAL ======================= -->
+
+        <!-- <div id="addModal" class="modal">
+            <div class="modal-content">
+
+                <h3>Add Timetable</h3>
+
+                <label>Department</label>
+                <select id="department">
+                    <option value="MCA">MCA</option>
+                    <option value="MBA">MBA</option>
+                    <option value="CSE">CSE</option>
+                </select>
+
+                <label>Semester</label>
+                <select id="semester">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+
+                <label>Day</label>
+                <select id="day">
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                </select>
+
+                <label>Period</label>
+                <select id="period">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+
+                <label>Subject Code</label>
+                <input type="text" id="subject_code">
+
+                <label>Subject Name</label>
+                <input type="text" id="subject_name">
+
+                <label>Staff ID</label>
+                <input type="text" id="staff_id" onblur="checkStaff()">
+
+                <p id="staffStatus"></p>
+
+                <button onclick="saveTimetable()">Save</button>
+                <button onclick="closeModal()">Close</button>
+
+            </div>
+        </div> -->
     </div>
 
-    <!-- ===================MANAGE SUBJECT======================= -->
-     <section id="subjectsSection" style="display:none;">
 
-        <h2>Manage Subjects</h2>
-
-        <button id="addSubjectBtn" class="btn-primary">Add Subject</button>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Year</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="subjectTableBody"></tbody>
-        </table>
-
-    </section>
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -252,4 +489,3 @@
 </body>
 
 </html>
-

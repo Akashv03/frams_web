@@ -13,23 +13,22 @@ app = Flask(__name__)
 
 app.secret_key = "super_secret_key"
 
+
 #------MySQL Connection------
 
 def get_db():
     return mysql.connector.connect(
         host="localhost",
-        user="root",        # change if needed
-        password="akash2003",    # your MySQL password
+        user="root",
+        password="akash2003",
         database="face_rams"
     )
 
-db = get_db()
-cursor = db.cursor(dictionary=True)
-# Helper function
-def get_cursor(dictionary=True):
+def get_cursor():
     conn = get_db()
-    cur = conn.cursor(dictionary=dictionary)
-    return conn, cur
+    cursor = conn.cursor(dictionary=True)
+    return conn, cursor
+
 
 
 #------LOGIN------
@@ -586,48 +585,129 @@ def advanced_search():
     return jsonify(students)
 
 
-#===========MANAGE SUBJECT======================
+#========================================================
+#=============== MANAGE SUBJECT =========================
+#========================================================
 
-#--------ADD SUBJECT------
-@app.route("/add_subject", methods=["POST"])
-def add_subject():
-    data = request.json
-    conn, cursor = get_cursor()
-
-    try:
-        cursor.execute("""
-            INSERT INTO subject (subject_name, subject_code, department, year)
-            VALUES (%s, %s, %s, %s)
-        """, (
-            data["subject_name"],
-            data["subject_code"],
-            data["department"],
-            data["year"]
-        ))
-
-        conn.commit()
-        return jsonify({"message": "Subject added successfully!"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-    finally:
-        cursor.close()
-        conn.close()
-
-#--------GET ALL SUBJECT------
+# -------- GET ALL SUBJECTS --------
 @app.route("/get_subjects", methods=["GET"])
 def get_subjects():
     conn, cursor = get_cursor()
+
     cursor.execute("SELECT * FROM subject")
     subjects = cursor.fetchall()
+
     cursor.close()
     conn.close()
+
     return jsonify(subjects)
 
-#--------DELETE SUBJECT--------
+
+# -------- GET SINGLE SUBJECT --------
+@app.route("/get_subject/<int:id>", methods=["GET"])
+def get_subject(id):
+    try:
+        conn, cursor = get_cursor()
+
+        cursor.execute(
+            "SELECT id, subject_code, subject_name, department, year, semester FROM subject WHERE id=%s",
+            (id,)
+        )
+
+        subject = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if not subject:
+            return jsonify({"error": "Subject not found"}), 404
+
+        return jsonify({
+            "id": subject["id"],
+            "subject_code": subject["subject_code"],
+            "subject_name": subject["subject_name"],
+            "department": subject["department"],
+            "year": subject["year"],
+            "semester": subject["semester"]
+        })
+
+    except Exception as e:
+        print("ERROR:", e)  # This will show error in terminal
+        return jsonify({"error": str(e)}), 500
+
+
+# -------- ADD SUBJECT --------
+@app.route("/add_subject", methods=["POST"])
+def add_subject():
+    try:
+        data = request.json
+
+        subject_code = data["subject_code"]
+        subject_name = data["subject_name"]
+        department = data["department"]
+        year = data["year"]
+        semester = data["semester"]
+
+        conn, cursor = get_cursor()
+
+        cursor.execute("""
+            INSERT INTO subject 
+            (subject_code, subject_name, department, year, semester)
+            VALUES (%s,%s,%s,%s,%s)
+        """, (subject_code, subject_name, department, year, semester))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "message": "Subject added successfully"
+        })
+
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        })
+
+# ---------UPDATE SUBJECT--------
+@app.route("/update_subject/<int:id>", methods=["POST"])
+def update_subject(id):
+
+    data = request.json
+
+    code = data["code"]
+    name = data["name"]
+    dept = data["department"]
+    year = data["year"]
+    semester = data["semester"]
+
+    conn, cursor = get_cursor()
+
+    cursor.execute("""
+        UPDATE subject
+        SET subject_code=%s,
+            subject_name=%s,
+            department=%s,
+            year=%s,
+            semester=%s
+        WHERE id=%s
+    """,(code,name,dept,year,semester,id))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "message":"Subject updated successfully"
+    })
+
+
+# -------- DELETE SUBJECT --------
 @app.route("/delete_subject/<int:id>", methods=["DELETE"])
 def delete_subject(id):
+
     conn, cursor = get_cursor()
 
     cursor.execute("DELETE FROM subject WHERE id=%s", (id,))
@@ -636,7 +716,192 @@ def delete_subject(id):
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Subject deleted successfully!"})
+    return jsonify({
+        "message": "Subject deleted successfully"
+    })
+
+
+
+
+#-------------------------------------
+#=========MANAGE STAFF==============
+
+#--------GET STAFF------
+@app.route('/get_staff', methods=['GET'])
+def get_staff():
+    conn, cursor = get_cursor()
+    cursor.execute("SELECT * FROM staff")
+    data = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(data)
+
+#--------ADD STAFF--------
+@app.route('/add_staff', methods=['POST'])
+def add_staff():
+
+    data = request.json
+
+    staff_id = data['staff_id']
+    name = data['staff_name']
+    dept = data['department']
+    email = data['email']
+
+    conn, cursor = get_cursor()
+
+    # Check duplicate
+    cursor.execute("SELECT * FROM staff WHERE staff_id=%s", (staff_id,))
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.close()
+        conn.close()
+        return jsonify({"message": "Staff ID already exists"})
+
+    # Insert staff
+    cursor.execute("""
+        INSERT INTO staff (staff_id, staff_name, department, email)
+        VALUES (%s, %s, %s, %s)
+    """, (staff_id, name, dept, email))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Staff added successfully"})
+
+
+#-------EDIT STAFF-------
+@app.route("/get_staff/<staff_id>")
+def get_staff_by_id(staff_id):
+
+    conn,cursor = get_cursor()
+
+    cursor.execute("SELECT * FROM staff WHERE staff_id=%s",(staff_id,))
+    staff = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(staff)
+
+#--------UPDATE STAFF-------
+@app.route("/update_staff/<staff_id>", methods=["PUT"])
+def update_staff(staff_id):
+
+    data = request.json
+
+    name = data["staff_name"]
+    dept = data["department"]
+    email = data["email"]
+
+    conn, cursor = get_cursor()
+
+    cursor.execute("""
+        UPDATE staff
+        SET staff_name=%s, department=%s, email=%s
+        WHERE staff_id=%s
+    """, (name, dept, email, staff_id))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message": "Staff updated successfully"})
+
+
+#--------DELETE STAFF-------
+@app.route('/delete_staff/<staff_id>', methods=['DELETE'])
+def delete_staff(staff_id):
+
+    conn, cursor = get_cursor()
+
+    cursor.execute("DELETE FROM staff WHERE staff_id=%s",(staff_id,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({"message":"Staff deleted successfully"})
+
+
+#===================================================================
+#------------------TIME TABLE-------------------------------
+#===================================================================
+
+
+# #--------ADD TIMETABLE-------
+# @app.route('/add_timetable', methods=['POST'])
+# def add_timetable():
+
+#     data = request.json
+
+#     department = data['department']
+#     semester = data['semester']
+#     shift = data['shift']
+#     day = data['day']
+#     period = data['period']
+#     subject_code = data['subject_code']
+#     subject = data['subject']
+#     staff_id = data['staff_id']
+
+#     conn = get_db()
+#     cursor = conn.cursor()
+
+#     cursor.execute("""
+#         INSERT INTO timetable
+#         (department, semester, shift_type, day, period, subject_code, subject, staff_id)
+#         VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+#     """, (department, semester, shift, day, period, subject_code, subject, staff_id))
+
+#     conn.commit()
+
+#     return jsonify({"message": "Timetable added successfully"})
+
+#--------GET TIMETABEL IN FORNTEND--------
+
+# @app.route('/get_timetable')
+# def get_timetable():
+
+#     department = request.args.get("department")
+#     shift = request.args.get("shift")
+
+#     conn, cursor = get_cursor()
+
+#     cursor.execute("""
+#     SELECT t.day,t.period,s.subject_name,t.staff_id
+#     FROM timetable t
+#     JOIN subject s ON t.subject_code = s.subject_code
+#     WHERE t.department=%s AND t.shift_type=%s
+#     """,(department,shift))
+
+#     rows = cursor.fetchall()
+
+#     cursor.close()
+#     conn.close()
+
+#     return jsonify(rows)
+
+# @app.route("/get_staff_by_department/<dept>")
+# def get_staff_by_department(dept):
+
+#     conn, cursor = get_cursor()
+
+#     cursor.execute(
+#         "SELECT staff_id, staff_name FROM staff WHERE department=%s",
+#         (dept,)
+#     )
+
+#     staff = cursor.fetchall()
+
+#     cursor.close()
+#     conn.close()
+
+#     return jsonify(staff)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
