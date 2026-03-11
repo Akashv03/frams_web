@@ -413,7 +413,7 @@ def recognize():
 # =============== MANAGE STUDENT ==============
 # ---------------------------------------------
 
-# ------GET ALL STUDENT DETAILS------
+# ------GET ALL STUDENTS DETAILS------
 @app.route('/get_students', methods=['GET'])
 def get_students():
     conn, cursor = get_cursor()
@@ -471,12 +471,26 @@ def update_student(id):
         conn = get_db()
         cursor = conn.cursor(dictionary=True)
 
-        # 1️⃣ Get old regno (important if regno changed)
+        # 1️⃣ Get old regno
         cursor.execute("SELECT regno FROM student WHERE id=%s", (id,))
         old_data = cursor.fetchone()
         old_regno = old_data['regno']
 
-        # 2️⃣ Update student table (NO PASSWORD HERE)
+        # 2️⃣ Update attendance FIRST
+        cursor.execute("""
+            UPDATE attendance
+            SET regno=%s
+            WHERE regno=%s
+        """, (data['regno'], old_regno))
+
+        # 3️⃣ Update user login
+        cursor.execute("""
+            UPDATE user
+            SET username=%s
+            WHERE username=%s
+        """, (data['regno'], old_regno))
+
+        # 4️⃣ Update student table LAST
         cursor.execute("""
             UPDATE student
             SET regno=%s, fullname=%s, dob=%s, department=%s, course=%s, year=%s
@@ -491,17 +505,6 @@ def update_student(id):
             id
         ))
 
-        # 3️⃣ Update user table (username + password)
-        cursor.execute("""
-            UPDATE user
-            SET username=%s, password=%s
-            WHERE username=%s
-        """, (
-            data['regno'],
-            data['password'],
-            old_regno
-        ))
-
         conn.commit()
         cursor.close()
         conn.close()
@@ -510,6 +513,7 @@ def update_student(id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
 #------DELETE STUDENT------
 @app.route('/delete_student/<int:id>', methods=['DELETE'])
@@ -952,6 +956,58 @@ def delete_timetable():
     """, (dept, course, year, sem, shift, day_order, period))
     conn.commit()
     return jsonify({"success": True, "message": "Timetable Slot Deleted"})
+
+
+#===================================================================
+#------------------ ATTENDANCE MONITOR-------------------------------
+#===================================================================
+
+# ----------- GET ATTENDANCE ----------
+@app.route('/get_attendance')
+def get_attendance():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT a.regno, s.name, a.date, a.status
+        FROM attendance a
+        JOIN student s ON a.regno = s.regno
+        ORDER BY a.date DESC
+    """)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return jsonify(data)
+
+# ---------- ATTENDANCE SUMMARY ----------
+@app.route('/attendance_summary')
+def attendance_summary():
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+    SELECT 
+        s.regno,
+        s.name,
+        COUNT(CASE WHEN a.status='Present' THEN 1 END) as present,
+        COUNT(CASE WHEN a.status='Absent' THEN 1 END) as absent
+    FROM student s
+    LEFT JOIN attendance a ON s.regno = a.regno
+    GROUP BY s.regno
+    """)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return jsonify(data)
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -22,6 +22,7 @@ async function loadStudents() {
                     <td>${student.regno}</td>
                     <td>${student.fullname}</td>
                     <td>${student.department}</td>
+                    <td>${student.course}</td>
                     <td>${student.year}</td>
                     <td>
                         <button onclick="editStudent(${student.id})" class="btn-primary">Edit</button>
@@ -61,6 +62,7 @@ async function editStudent(id) {
         const passwordInput = document.getElementById("password");
         passwordInput.value = "";
         passwordInput.required = false;
+        passwordInput.disabled = true; // hide password while editing
 
         editingStudentId = id;
 
@@ -181,6 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const passwordInput = document.getElementById("password");
         passwordInput.value = "";
         passwordInput.required = true;
+        passwordInput.disabled = false; // show password when adding
 
         studentModal.style.display = "flex";
     });
@@ -235,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const studentData = { regno, fullname, dob, department, course, year };
 
-        if (passwordVal !== "") {
+        if (!editingStudentId) {
             studentData.password = passwordVal;
         }
 
@@ -881,3 +884,7 @@ function openSlotModal(day, period, slot = null) {
 
     document.getElementById('timetableModal').style.display = 'block';
 }
+
+// // -----------------------------------------------------------------
+// // ================== ATTENDANCE MONITOR  ==========================
+// // -----------------------------------------------------------------
