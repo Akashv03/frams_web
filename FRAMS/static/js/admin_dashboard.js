@@ -24,6 +24,8 @@ async function loadStudents() {
                     <td>${student.department}</td>
                     <td>${student.course}</td>
                     <td>${student.year}</td>
+                    <td>${student.semester}</td>
+
                     <td>
                         <button onclick="editStudent(${student.id})" class="btn-primary">Edit</button>
                         <button onclick="deleteStudent(${student.id})" class="btn-danger">Delete</button>
@@ -58,6 +60,7 @@ async function editStudent(id) {
         document.getElementById("department").value = student.department;
         document.getElementById("course").value = student.course;
         document.getElementById("year").value = student.year;
+        document.getElementById("semester").value = student.semester;
 
         const passwordInput = document.getElementById("password");
         passwordInput.value = "";
@@ -106,17 +109,21 @@ async function deleteStudent(id) {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // ===== SECTION SWITCHING =====
-    const navItems = document.querySelectorAll(".nav-item");
-
+    // Sections
     const dashboardSection = document.getElementById("dashboardSection");
     const studentsSection = document.getElementById("studentsSection");
     const subjectsSection = document.getElementById("subjectsSection");
     const facerecSection = document.getElementById("facerecSection");
     const staffSection = document.getElementById("staffSection");
     const timetablesection = document.getElementById("timetablesection");
+    const attendancesection = document.getElementById("attendanceSection");
 
+    // Show dashboard by default on page load
+    dashboardSection.style.display = "block";
+    document.querySelector('.nav-item[data-section="dashboard"]').classList.add("active");
 
+    // Section switching
+    const navItems = document.querySelectorAll(".nav-item");
 
     navItems.forEach(item => {
         item.addEventListener("click", function () {
@@ -133,38 +140,39 @@ document.addEventListener("DOMContentLoaded", function () {
             facerecSection.style.display = "none";
             staffSection.style.display = "none";
             timetablesection.style.display = "none";
+            attendancesection.style.display = "none";
 
             // Show selected
-            if (section === "dashboard") {
-                dashboardSection.style.display = "block";
-            }
-
-            if (section === "students") {
-                studentsSection.style.display = "block";
-                loadStudents();
-            }
-
-            if (section === "subjects") {
-                subjectsSection.style.display = "block";
-                loadSubjects();
-            }
-
-            if (section === "facerec") {
-                facerecSection.style.display = "block";
-            }
-
-            if (section === "staff") {
-                staffSection.style.display = "block";
-                loadStaff();
-            }
-
-            if (section === "timetable") {
-                timetablesection.style.display = "block";
+            switch(section) {
+                case "dashboard":
+                    dashboardSection.style.display = "block";
+                    break;
+                case "students":
+                    studentsSection.style.display = "block";
+                    loadStudents();
+                    break;
+                case "subjects":
+                    subjectsSection.style.display = "block";
+                    loadSubjects();
+                    break;
+                case "facerec":
+                    facerecSection.style.display = "block";
+                    break;
+                case "staff":
+                    staffSection.style.display = "block";
+                    loadStaff();
+                    break;
+                case "timetable":
+                    timetablesection.style.display = "block";
+                    break;
+                case "attendance":
+                    attendancesection.style.display = "block";
+                    loadAttendance();
+                    break;
             }
 
         });
     });
-
 
 
     // ===== STUDENT MODAL CONTROL =====
@@ -234,9 +242,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const department = document.getElementById("department").value.trim();
         const course = document.getElementById("course").value.trim();
         const year = document.getElementById("year").value.trim();
+        const semester = document.getElementById("semester").value.trim();
         const passwordVal = document.getElementById("password").value.trim();
 
-        const studentData = { regno, fullname, dob, department, course, year };
+        const studentData = { regno, fullname, dob, department, course, year, semester };
 
         if (!editingStudentId) {
             studentData.password = passwordVal;
@@ -400,16 +409,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
 
-
-    // ===== TIMETABLE BUTTON =====
+    // --------------------------------------------------------
+    // =================== TIMETABLE BUTTON ===================
+    // --------------------------------------------------------
     const btnLoadTimetable = document.getElementById('btnLoadTimetable');
     if (btnLoadTimetable) {
         btnLoadTimetable.addEventListener('click', loadTimetable);
     }
-
-
-
-
 
 
 
@@ -796,6 +802,12 @@ async function deleteStaff(id) {
 
 }
 
+// --------------------------------------------------------
+// =================== ATTENDANCE MONITOR ===================
+// --------------------------------------------------------
+
+
+
 // // -------------------------------------------------------------
 // // ================== TIME TABLE  ==========================
 // // -------------------------------------------------------------
@@ -888,3 +900,63 @@ function openSlotModal(day, period, slot = null) {
 // // -----------------------------------------------------------------
 // // ================== ATTENDANCE MONITOR  ==========================
 // // -----------------------------------------------------------------
+
+async function loadAttendance() {
+    const res = await fetch("/get_attendance");
+    const data = await res.json();
+
+    const table = document.getElementById("attendanceTableBody");
+    table.innerHTML = "";
+
+    data.forEach(a => {
+        table.innerHTML += `
+        <tr>
+            <td>${a.regno}</td>
+            <td>${a.name}</td>
+            <td>${a.date}</td>
+            <td>${a.shift}</td>
+            <td>${a.time}</td>
+            <td>${a.status}</td>
+        </tr>
+        `;
+    });
+}
+
+async function searchAttendance() {
+    const regno = document.getElementById("searchRegno").value.trim();
+    const date = document.getElementById("searchDate").value;
+
+    if (!regno && !date) {
+        alert("Enter Reg No or Date to search");
+        return;
+    }
+
+    let query = [];
+    if (regno) query.push(`regno=${regno}`);
+    if (date) query.push(`date=${date}`);
+
+    const url = `/get_attendance?${query.join("&")}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const table = document.getElementById("attendanceTableBody");
+        table.innerHTML = "";
+
+        data.forEach(a => {
+            table.innerHTML += `
+            <tr>
+                <td>${a.regno}</td>
+                <td>${a.name}</td>
+                <td>${a.date}</td>
+                <td>${a.shift}</td>
+                <td>${a.time}</td>
+                <td>${a.status}</td>
+            </tr>
+            `;
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}

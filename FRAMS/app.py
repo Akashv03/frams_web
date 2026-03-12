@@ -6,12 +6,21 @@ import base64
 import os
 import pickle
 import mysql.connector
-from datetime import datetime
+from datetime import datetime,time
 
 
 app = Flask(__name__)
 
 app.secret_key = "super_secret_key"
+
+def get_shift_and_period():
+    # Example logic
+    now = datetime.now().hour
+    if 9 <= now < 12:
+        return "Morning", 1
+    elif 14 <= now < 17:
+        return "Afternoon", 2
+    return None, None
 
 
 #------MySQL Connection------
@@ -304,21 +313,18 @@ def test_model():
 
 @app.route("/recognize", methods=["POST"])
 def recognize():
-
     import pickle
 
     data = request.json
-    image_data = data["image"]
-
-    image_data = image_data.split(",")[1]
+    image_data = data["image"].split(",")[1]
     img_bytes = base64.b64decode(image_data)
     np_arr = np.frombuffer(img_bytes, np.uint8)
     frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     detected_faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
     if len(detected_faces) == 0:
         return jsonify({"status": "no_face_detected"})
 
@@ -331,83 +337,125 @@ def recognize():
     with open("labels.pkl", "rb") as f:
         label_map = pickle.load(f)
 
-    for (x, y, w, h) in detected_faces:
+    shift, period = get_shift_and_period()
+    db_shift = shift
+    if shift == "Afternoon":
+        db_shift = "Evening"  # DB uses Evening for Afternoon timings
 
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True, buffered=True)  # ✅ buffered cursor avoids "Unread result"
+
+    for (x, y, w, h) in detected_faces:
         face_img = gray[y:y+h, x:x+w]
         face_img = cv2.resize(face_img, (200, 200))
-
         predicted_label, confidence = model.predict(face_img)
+
+        print("Confidence:", confidence)
+
         if predicted_label not in label_map:
             return jsonify({"status": "unknown_face"})
 
-        print("Confidence:", confidence)
-        
-
-
         if confidence < 60:
-
             regno = label_map[predicted_label]
 
-            conn = get_db()
-            cursor = conn.cursor(dictionary=True)
-
-            # Get user details
-            cursor.execute(
-                "SELECT fullname, department, course, year FROM student WHERE regno=%s",
-                (regno,)
-            )
+            # ---------------- STUDENT DETAILS ----------------
+            cursor.execute("""
+                SELECT fullname, department, course, semester, year 
+                FROM student 
+                WHERE regno=%s
+            """, (regno,))
             student = cursor.fetchone()
 
-            if student:
+            if not student:
+                return jsonify({"status": "student_not_found"})
 
-                now = datetime.now()
-                today_date = now.date()
-                current_time = now.strftime("%H:%M:%S")
+            today_date = datetime.now().date()
+            current_time = datetime.now().strftime("%H:%M:%S")
 
-                # Decide shift
-                if now.hour < 12:
-                    shift = "Morning"
-                else:
-                    shift = "Evening"
+            # -------- SUBJECT FROM TIMETABLE --------
+            cursor.execute("""
+                SELECT subject_code, staff_id FROM timetable
+                WHERE course=%s 
+                  AND semester=%s 
+                  AND shift_type=%s 
+                  AND period=%s
+            """, (
+                student["course"],
+                student["semester"],
+                db_shift,
+                period
+            ))
+            timetable = cursor.fetchone()
 
-                # Check duplicate attendance
+            if not timetable:
+                return jsonify({"status": "no_timetable_found"})
+
+            subject_code = timetable["subject_code"]
+            staff_id = timetable["staff_id"] 
+
+            # -------- CHECK DUPLICATE ATTENDANCE --------
+            cursor.execute("""
+                SELECT * FROM attendance
+                WHERE regno=%s 
+                  AND date=%s 
+                  AND shift=%s 
+                  AND period=%s 
+                  AND subject_code=%s
+            """, (
+                regno,
+                today_date,
+                shift,
+                period,
+                subject_code
+            ))
+            already = cursor.fetchone()
+
+            if not already:
                 cursor.execute("""
-                    SELECT * FROM attendance 
-                    WHERE regno=%s AND date=%s AND shift=%s
-                """, (regno, today_date, shift))
+                    INSERT INTO attendance 
+                    (regno, department, year, semester, period, name, date, shift, time, status, subject_code, course, staff_id)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                """, (
+                    regno,
+                    student["department"],
+                    student["year"],
+                    student["semester"],
+                    period,
+                    student["fullname"],
+                    today_date,
+                    shift,
+                    current_time,
+                    'present',
+                    subject_code,
+                    student["course"],
+                    staff_id
+                ))
+                conn.commit()
+                status = "matched"
+            else:
+                status = "already_marked"
 
-                already = cursor.fetchone()
+            conn.close()
+            return jsonify({
+                "status": status,
+                "regno": regno,
+                "name": student["fullname"],
+                "dept": student["department"],
+                "course": student["course"],
+                "semester": student["semester"],
+                "year": student["year"],
+                "period": period,
+                "shift": shift,
+                "subject_code": subject_code,
+                "staff_id": staff_id,
+                "date": str(today_date),
+                "time": current_time,
+                "image": data["image"],
+                "confidence": float(confidence)
+            })
 
-                if not already:
-                    cursor.execute("""
-                        INSERT INTO attendance (regno, name, date, shift, time)
-                        VALUES (%s, %s, %s, %s, %s)
-                    """, (regno, student["fullname"], today_date, shift, current_time))
-
-                    conn.commit()
-
-                    status = "matched"
-                else:
-                    status = "already_marked"
-
-                conn.close()
-
-                return jsonify({
-                    "status": status,
-                    "regno": regno,
-                    "name": student["fullname"],
-                    "dept": student["department"],
-                    "course": student["course"],
-                    "year": student["year"],
-                    "image": data["image"],
-                    "date": str(today_date),
-                    "time": current_time,
-                    "shift": shift,
-                    "confidence": float(confidence)
-                })
-
+    conn.close()
     return jsonify({"status": "not_matched"})
-
 
 # ----------------------------------------------
 # =============== MANAGE STUDENT ==============
@@ -433,14 +481,15 @@ def add_student():
 
         # 1️⃣ Insert into student table
         cursor.execute("""
-            INSERT INTO student (regno, fullname, dob, department, course, year)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO student (regno, fullname, dob, department, course, semester, year)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (
             data['regno'],
             data['fullname'],
             data['dob'],
             data['department'],
             data['course'],
+            data['semester'],
             data['year']
         ))
 
@@ -493,7 +542,7 @@ def update_student(id):
         # 4️⃣ Update student table LAST
         cursor.execute("""
             UPDATE student
-            SET regno=%s, fullname=%s, dob=%s, department=%s, course=%s, year=%s
+            SET regno=%s, fullname=%s, dob=%s, department=%s, course=%s,  semester=%s, year=%s
             WHERE id=%s
         """, (
             data['regno'],
@@ -501,6 +550,7 @@ def update_student(id):
             data['dob'],
             data['department'],
             data['course'],
+            data['semester'],
             data['year'],
             id
         ))
@@ -512,6 +562,7 @@ def update_student(id):
         return jsonify({"message": "Student updated successfully"})
 
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
     
 
@@ -963,21 +1014,25 @@ def delete_timetable():
 #===================================================================
 
 # ----------- GET ATTENDANCE ----------
-@app.route('/get_attendance')
+@app.route("/get_attendance")
 def get_attendance():
     db = get_db()
-    cursor = db.cursor(dictionary=True)
+    cur = db.cursor(dictionary=True)
+    cur.execute("SELECT * FROM attendance")
+    rows = cur.fetchall()
 
-    cursor.execute("""
-        SELECT a.regno, s.name, a.date, a.status
-        FROM attendance a
-        JOIN student s ON a.regno = s.regno
-        ORDER BY a.date DESC
-    """)
+    data = []
+    for r in rows:
+        data.append({
+            "regno": r["regno"],
+            "name": r["name"],
+            "date": r["date"].strftime("%Y-%m-%d") if r["date"] else "",
+            "shift": r["shift"],
+            "time": str(r["time"]) if r["time"] else "",  # convert timedelta/time to string
+            "status": r["status"]
+        })
 
-    data = cursor.fetchall()
-
-    cursor.close()
+    cur.close()
     db.close()
 
     return jsonify(data)

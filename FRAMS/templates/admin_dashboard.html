@@ -112,7 +112,7 @@
     <div class="main-content">
 
         <!-- ================= DASHBOARD SECTION ================= -->
-        <div id="dashboardSection">
+        <div id="dashboardSection" class="section">
 
             <h1>Dashboard</h1>
 
@@ -148,7 +148,7 @@
         <!-- ------------------------------------------------------------------------------- -->
         <!-- ============================ STUDENTS SECTION =============================== -->
         <!-- --------------------------------------------------------------------------------- -->
-        <div class="student-section" id="studentsSection" style="display:none;">
+        <div class="section" id="studentsSection" style="display:none;">
 
             <div class="section-header">
                 <h2>Manage Students</h2>
@@ -169,6 +169,7 @@
                             <th>Department</th>
                             <th>Course</th>
                             <th>Year</th>
+                            <th>Semester</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -215,6 +216,11 @@
                             </div>
 
                             <div>
+                                <label>Semester</label>
+                                <input type="text" id="semester" required>
+                            </div>
+
+                            <div>
                                 <label>Password</label>
                                 <input type="password" id="password">
                                 <!-- <small>Password cannot be changed here</small> -->
@@ -230,7 +236,7 @@
         <!---------------------------------------------------------------------------------------->
         <!-- ============================ FACE RECOGNITION SECTION ============================ -->
         <!--------------------------------------------------------------------------------------->
-        <div id="facerecSection" style="display:none;">
+        <div id="facerecSection"  class="section" style="display:none;">
             <h1>Live Face Recognition</h1>
             <p>Camera screen here</p>
         </div>
@@ -330,7 +336,7 @@
         <!---------------------------------------------------------------------------------->
         <!-- =============================== MANAGE STAFF ============================== -->
         <!-- --------------------------------------------------------------------------- -->
-        <section id="staffSection" style="display:none;">
+        <section id="staffSection" class="section" style="display:none;">
 
             <div class="section-header">
                 <h2>Manage Staff</h2>
@@ -390,7 +396,7 @@
         <!-- =================== TIMETABLE MODULE ======================= -->
         <!-- ---------------------------------------------------------------- -->
 
-        <section id="timetablesection" class="section">
+        <section id="timetablesection" class="section" style="display: none;">
 
             <h2>Manage Timetable</h2>
 
@@ -398,15 +404,15 @@
             <div class="filters" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
                 <select id="ttdepartment">
                     <option value="">Select Department</option>
-                    <option value="MCA">MCA</option>
-                    <option value="BSC">Bsc</option>
-                    <option value="MSC">Msc</option>
+                    <option value="CS">Computer Science</option>
+                    <option value="Computer Application">Computer Application</option>
                 </select>
 
                 <select id="ttcourse">
                     <option value="">Select Course</option>
-                    <option value="CS">Computer Science</option>
-                    <option value="CA">Computer Application</option>
+                    <option value="MCA">MCA</option>
+                    <option value="BSC">Bsc</option>
+                    <option value="MSC">Msc</option>
                 </select>
 
                 <select id="ttyear">
@@ -478,6 +484,94 @@
                 </div>
             </div>
         </section>
+
+        <!-- ---------------------------------------------------------------- -->
+        <!-- ====================== ATTENDANCE MONITOR ====================== -->
+        <!-- ---------------------------------------------------------------- -->
+
+        <div id="attendanceSection" class="section" style="display:none;">
+
+            <h1>Attendance Monitor</h1>
+
+            <!-- Filters -->
+            <div class="filters" style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap;">
+
+                <input type="text" id="searchRegno" placeholder="Enter Reg No">
+
+                <input type="date" id="searchDate">
+
+                <button class="btn-primary" onclick="searchAttendance()">Search</button>
+
+                <button class="btn-secondary" onclick="loadAttendance()">Reset</button>
+
+            </div>
+
+
+            <!-- Today Attendance Card -->
+            <div class="stats-cards">
+
+                <div class="card">
+                    <h3>Today's Attendance</h3>
+                    <p id="todayAttendanceCount">0</p>
+                </div>
+
+            </div>
+
+
+            <!-- Attendance Table -->
+
+            <div class="table-container">
+
+                <h3>Attendance Records</h3>
+
+                <table class="styled-table">
+
+                    <thead>
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Shift</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="attendanceTableBody">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+
+            <!-- Student Attendance Count -->
+
+            <div class="table-container">
+
+                <h3>Student Attendance Count</h3>
+
+                <table class="styled-table">
+
+                    <thead>
+                        <tr>
+                            <th>Reg No</th>
+                            <th>Name</th>
+                            <th>Total Days Present</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="attendanceCountTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
 
 
     </div>
