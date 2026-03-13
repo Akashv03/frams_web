@@ -802,9 +802,6 @@ async function deleteStaff(id) {
 
 }
 
-// --------------------------------------------------------
-// =================== ATTENDANCE MONITOR ===================
-// --------------------------------------------------------
 
 
 
@@ -915,8 +912,11 @@ async function loadAttendance() {
             <td>${a.name}</td>
             <td>${a.date}</td>
             <td>${a.shift}</td>
+            <td>${a.period}</td>
             <td>${a.time}</td>
             <td>${a.status}</td>
+            <td>${a.staff_id}</td>
+
         </tr>
         `;
     });

@@ -13,14 +13,6 @@ app = Flask(__name__)
 
 app.secret_key = "super_secret_key"
 
-def get_shift_and_period():
-    # Example logic
-    now = datetime.now().hour
-    if 9 <= now < 12:
-        return "Morning", 1
-    elif 14 <= now < 17:
-        return "Afternoon", 2
-    return None, None
 
 
 #------MySQL Connection------
@@ -309,154 +301,372 @@ def test_model():
     print(f"🎯 Test Accuracy: {accuracy:.2f}%")
     return accuracy
 
+def get_shift_and_period():
+
+    print("NEW PERIOD FUNCTION RUNNING")
+
+    now = datetime.now().time()
+
+    morning = [
+        (time(8,0), time(9,0), 1),
+        (time(9,0), time(10,0), 2),
+        (time(10,0), time(11,0), 3),
+        (time(11,0), time(12,0), 4),
+        (time(12,0), time(13,0), 5)
+    ]
+
+    for start, end, p in morning:
+        if start <= now < end:
+            return "Morning", p
+
+    afternoon = [
+        (time(13,0), time(14,0), 1),
+        (time(14,0), time(15,0), 2),
+        (time(15,0), time(16,0), 3),
+        (time(16,0), time(17,0), 4),
+        (time(17,0), time(18,0), 5)
+    ]
+
+    for start, end, p in afternoon:
+        if start <= now < end:
+            return "Afternoon", p
+
+    return None, None
+
+def close_previous_period(conn):
+
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    shift, current_period = get_shift_and_period()
+
+    if not shift or not current_period:
+        return
+
+    today = datetime.now().date()
+
+    # Get all students
+    cursor.execute("""
+        SELECT regno, fullname, department, course, semester
+        FROM student
+    """)
+    students = cursor.fetchall()
+
+    for student in students:
+
+        # Loop through all previous periods
+        for p in range(1, current_period):
+
+            cursor.execute("""
+                SELECT id FROM attendance
+                WHERE regno=%s
+                AND date=%s
+                AND shift=%s
+                AND period=%s
+            """,(student["regno"], today, shift, p))
+
+            record = cursor.fetchone()
+
+            # -------- GET SUBJECT + STAFF FROM TIMETABLE --------
+            cursor.execute("""
+                SELECT subject_code, staff_id
+                FROM timetable
+                WHERE UPPER(course)=UPPER(%s)
+                AND semester=%s
+                AND UPPER(shift_type)=UPPER(%s)
+                AND period=%s
+                """, (
+                    student["course"],
+                    student["semester"],
+                    shift,
+                    p
+                ))
+
+            timetable = cursor.fetchone()
+            print("Period:", p, "Timetable:", timetable)
+
+            if timetable:
+                subject_code = timetable["subject_code"]
+                staff_id = timetable["staff_id"]
+            else:
+                subject_code = None
+                staff_id = None
+
+            # -------- INSERT ABSENT IF RECORD NOT EXISTS --------
+            if not record:
+
+                cursor.execute("""
+                    INSERT INTO attendance
+                    (regno,name,date,shift,period,status,department,course,semester,subject_code,staff_id)
+                    VALUES (%s,%s,%s,%s,%s,'absent',%s,%s,%s,%s,%s)
+                """,(
+                    student["regno"],
+                    student["fullname"],
+                    today,
+                    shift,
+                    p,
+                    student["department"],
+                    student["course"],
+                    student["semester"],
+                    subject_code,
+                    staff_id
+                ))
+
+            else:
+
+                # Convert pending → absent
+                cursor.execute("""
+                    UPDATE attendance
+                    SET status='absent',subject_code=%s,
+                    staff_id=%s
+                    WHERE regno=%s
+                    AND date=%s
+                    AND shift=%s
+                    AND period=%s
+                    AND status='pending'
+                """,(subject_code,staff_id,student["regno"], today, shift, p))
+
+    conn.commit()
+
+def create_pending_attendance(conn, department, course, semester, shift, period):
+
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    today = datetime.now().date()
+
+    cursor.execute("""
+    SELECT regno, fullname
+    FROM student
+    WHERE department=%s AND course=%s AND semester=%s
+    """,(department,course,semester))
+
+    students = cursor.fetchall()
+
+    # get timetable
+    cursor.execute("""
+    SELECT subject_code, staff_id
+    FROM timetable
+    WHERE course=%s AND semester=%s AND shift_type=%s AND period=%s
+    """,(course,semester,shift,period))
+
+    timetable = cursor.fetchone()
+
+    if timetable:
+        subject_code = timetable["subject_code"]
+        staff_id = timetable["staff_id"]
+    else:
+        subject_code = None
+        staff_id = None
+
+    for student in students:
+
+       cursor.execute("""
+       SELECT id FROM attendance
+       WHERE regno=%s
+       AND date=%s
+       AND shift=%s
+       AND period=%s
+       """,(student["regno"], today, shift, period))
+    
+       exists = cursor.fetchone()
+    
+       if not exists:
+        
+           cursor.execute("""
+           INSERT INTO attendance
+           (regno,name,date,shift,period,status,department,course,semester,subject_code,staff_id)
+           VALUES (%s,%s,%s,%s,%s,'pending',%s,%s,%s,%s,%s)
+           """,(
+               student["regno"],
+               student["fullname"],
+               today,
+               shift,
+               period,
+               department,
+               course,
+               semester,
+               subject_code,
+               staff_id
+           ))
+    conn.commit()
+
 #------LIVE FACE RECOGNIZE------
 
 @app.route("/recognize", methods=["POST"])
 def recognize():
-    import pickle
 
     data = request.json
     image_data = data["image"].split(",")[1]
+
     img_bytes = base64.b64decode(image_data)
     np_arr = np.frombuffer(img_bytes, np.uint8)
     frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-    detected_faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-    if len(detected_faces) == 0:
+    face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    if len(faces) == 0:
         return jsonify({"status": "no_face_detected"})
 
     if not os.path.exists("model.yml"):
-        return jsonify({"status": "error", "message": "Model not trained yet"})
+        return jsonify({"status": "model_not_trained"})
 
+    # Load Model
     model = cv2.face.LBPHFaceRecognizer_create()
     model.read("model.yml")
 
     with open("labels.pkl", "rb") as f:
         label_map = pickle.load(f)
 
-    shift, period = get_shift_and_period()
-    db_shift = shift
-    if shift == "Afternoon":
-        db_shift = "Evening"  # DB uses Evening for Afternoon timings
-
     conn = get_db()
-    cursor = conn.cursor(dictionary=True, buffered=True)  # ✅ buffered cursor avoids "Unread result"
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
-    for (x, y, w, h) in detected_faces:
+    # 1️⃣ close previous periods
+    close_previous_period(conn)
+
+    shift, period = get_shift_and_period()
+    print("CURRENT TIME:", datetime.now())
+    print("SHIFT:", shift)
+    print("PERIOD:", period)
+
+    if not shift:
+        return jsonify({"status": "outside_class_time"})
+
+    today = datetime.now().date()
+    current_time = datetime.now().strftime("%H:%M:%S")
+
+    for (x, y, w, h) in faces:
+
         face_img = gray[y:y+h, x:x+w]
         face_img = cv2.resize(face_img, (200, 200))
+
         predicted_label, confidence = model.predict(face_img)
 
         print("Confidence:", confidence)
 
+        if confidence > 60:
+            return jsonify({"status": "unknown_face"})
+
         if predicted_label not in label_map:
             return jsonify({"status": "unknown_face"})
 
-        if confidence < 60:
-            regno = label_map[predicted_label]
+        regno = label_map[predicted_label]
 
-            # ---------------- STUDENT DETAILS ----------------
-            cursor.execute("""
-                SELECT fullname, department, course, semester, year 
-                FROM student 
-                WHERE regno=%s
-            """, (regno,))
-            student = cursor.fetchone()
+        # -------- GET STUDENT --------
+        cursor.execute("""
+        SELECT fullname, department, course, semester, year
+        FROM student
+        WHERE regno=%s
+        """, (regno,))
 
-            if not student:
-                return jsonify({"status": "student_not_found"})
+        student = cursor.fetchone()
 
-            today_date = datetime.now().date()
-            current_time = datetime.now().strftime("%H:%M:%S")
+        if not student:
+            return jsonify({"status": "student_not_found"})
 
-            # -------- SUBJECT FROM TIMETABLE --------
-            cursor.execute("""
-                SELECT subject_code, staff_id FROM timetable
-                WHERE course=%s 
-                  AND semester=%s 
-                  AND shift_type=%s 
-                  AND period=%s
-            """, (
-                student["course"],
-                student["semester"],
-                db_shift,
-                period
-            ))
-            timetable = cursor.fetchone()
+        # -------- CREATE PENDING ATTENDANCE --------
+        # 2️⃣ create rows for current period
+        create_pending_attendance(
+            conn,
+            student["department"],
+            student["course"],
+            student["semester"],
+            shift,
+            period
+        )
 
-            if not timetable:
-                return jsonify({"status": "no_timetable_found"})
+        # -------- GET SUBJECT --------
+        cursor.execute("""
+        SELECT subject_code, staff_id
+        FROM timetable
+        WHERE course=%s
+        AND semester=%s
+        AND shift_type=%s
+        AND period=%s
+        """, (
+            student["course"],
+            student["semester"],
+            shift,
+            period
+        ))
 
-            subject_code = timetable["subject_code"]
-            staff_id = timetable["staff_id"] 
+        timetable = cursor.fetchone()
 
-            # -------- CHECK DUPLICATE ATTENDANCE --------
-            cursor.execute("""
-                SELECT * FROM attendance
-                WHERE regno=%s 
-                  AND date=%s 
-                  AND shift=%s 
-                  AND period=%s 
-                  AND subject_code=%s
-            """, (
-                regno,
-                today_date,
-                shift,
-                period,
-                subject_code
-            ))
-            already = cursor.fetchone()
+        if not timetable:
+            return jsonify({"status": "no_class_now"})
 
-            if not already:
-                cursor.execute("""
-                    INSERT INTO attendance 
-                    (regno, department, year, semester, period, name, date, shift, time, status, subject_code, course, staff_id)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                """, (
-                    regno,
-                    student["department"],
-                    student["year"],
-                    student["semester"],
-                    period,
-                    student["fullname"],
-                    today_date,
-                    shift,
-                    current_time,
-                    'present',
-                    subject_code,
-                    student["course"],
-                    staff_id
-                ))
-                conn.commit()
-                status = "matched"
-            else:
-                status = "already_marked"
+        subject_code = timetable["subject_code"]
+        staff_id = timetable["staff_id"]
 
-            conn.close()
+        # -------- CHECK IF PRESENT ALREADY --------
+        cursor.execute("""
+        SELECT id FROM attendance
+        WHERE regno=%s
+        AND date=%s
+        AND shift=%s
+        AND period=%s
+        AND status='present'
+        """, (
+            regno,
+            today,
+            shift,
+            period
+        ))
+
+        already_present = cursor.fetchone()
+
+        if already_present:
             return jsonify({
-                "status": status,
+                "status": "already_marked",
                 "regno": regno,
-                "name": student["fullname"],
-                "dept": student["department"],
-                "course": student["course"],
-                "semester": student["semester"],
-                "year": student["year"],
-                "period": period,
-                "shift": shift,
-                "subject_code": subject_code,
-                "staff_id": staff_id,
-                "date": str(today_date),
-                "time": current_time,
-                "image": data["image"],
-                "confidence": float(confidence)
+                "name": student["fullname"]
             })
 
-    conn.close()
-    return jsonify({"status": "not_matched"})
+        # -------- UPDATE ATTENDANCE --------
+        cursor.execute("""
+        UPDATE attendance
+        SET status='present',
+            time=%s,
+            staff_id=%s
+        WHERE regno=%s
+        AND date=%s
+        AND shift=%s
+        AND period=%s
+        AND status='pending'
+        """, (
+            current_time,
+            staff_id,
+            regno,
+            today,
+            shift,
+            period
+        ))
 
+        conn.commit()
+
+        conn.close()
+
+        return jsonify({
+            "status": "matched",
+            "regno": regno,
+            "name": student["fullname"],
+            "department": student["department"],
+            "course": student["course"],
+            "semester": student["semester"],
+            "year": student["year"],
+            "subject_code": subject_code,
+            "staff_id": staff_id,
+            "period": period,
+            "shift": shift,
+            "date": str(today),
+            "time": current_time,
+            "confidence": float(confidence)
+        })
+
+    conn.close()
+
+    return jsonify({"status": "not_matched"})
 # ----------------------------------------------
 # =============== MANAGE STUDENT ==============
 # ---------------------------------------------
@@ -1028,8 +1238,10 @@ def get_attendance():
             "name": r["name"],
             "date": r["date"].strftime("%Y-%m-%d") if r["date"] else "",
             "shift": r["shift"],
+            "period": r["period"],
             "time": str(r["time"]) if r["time"] else "",  # convert timedelta/time to string
-            "status": r["status"]
+            "status": r["status"],
+            "staff_id": r["staff_id"]
         })
 
     cur.close()
